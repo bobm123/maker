@@ -7,24 +7,27 @@ length = 75;
 rounding_radius = 2;
 
 
-// prepare for printing
-
-// Rotate on edge and move up
-translate([0, 0, rounding_radius+sides*sqrt(2)/2])
-    rotate([135,0,0])
-        whistle();
-
-// add a t-shaped support for mouthpiece        
-translate([-8,-18.5,0])
-    cube([4,.25,4.5]);
-translate([-8,-20.5,0])
-    cube([4,4,.25]);
-
-// TODO: add some support for upper edge of fipple
-
-// No support
+// Uncomment basic or supported version
 //whistle();
+whistle_with_supports();
 
+
+// Prepared for printing
+module whistle_with_supports()
+{
+    // Rotate on edge and move up
+    translate([0, 0, rounding_radius+sides*sqrt(2)/2])
+        rotate([135,0,0])
+            whistle();
+
+    // add a t-shaped support for mouthpiece        
+    translate([-8,-18.5,0])
+        cube([4,.25,4.5]);
+    translate([-8,-20.5,0])
+        cube([4,4,.25]);
+
+    // TODO: add some support for upper edge of fipple
+}
 
 
 // A hollow box with a windway and fipple
