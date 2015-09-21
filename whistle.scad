@@ -14,7 +14,7 @@ ww_width  = mouthpiece_size[1] - 2;
 ww_height = mouthpiece_size[2];
 
 
-fi_length = mouthpiece_size[0] + 5;
+fi_length = mouthpiece_size[0] + 7;
 fi_width  = mouthpiece_size[1] - 2;
 fi_height = mouthpiece_size[2];
 
@@ -79,8 +79,7 @@ module whistle() {
             cube([ww_length, ww_width, ww_height]);
         
         // Cutout for fipple block
-        translate([0,(width - fi_width)/2,height - fi_height])
-            cube([fi_length, fi_width, fi_height+rounding_radius]);
+        fipple_block();
     }
     
     // form fipple as a seperate piece
@@ -99,20 +98,20 @@ module fipple_block()
 
 module fipple()
 {
-    // Still some magic numbers here for tweeking fipple
+    // Still some magic numbers here for tweeking fipple size
     difference (){
         fipple_block();
         translate([2.8, (width - fi_width)/2, height - 2.75]) {
-            rotate([0,-20,0])
-                cube([15, fi_width, 5]); // fipple - top cut
+            rotate([0,-22,0])
+                cube([18, fi_width, 6]); // fipple - top cut
             rotate([0,17,0])
-                cube([15, fi_width, 3]); // fipple - inside cut
+                cube([18, fi_width, 3]); // fipple - inside cut
         }
+        // make sure airway is clear
         translate([0, (width - fi_width)/2, height - 2.75])
             cube([5, fi_width, 10]);
     }
 }
-
 
 
 // A rounded box with a mouthpiece
