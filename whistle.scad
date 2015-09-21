@@ -2,23 +2,50 @@ use <fillets.scad>
 
 $fn = 24;  
 
-length = 75;
+length = 40;
 width = 35;
-height = 22;
+height = 20;
 rounding_radius = 2;
-
 
 mouthpiece_size = [10, 12, 2.5];
 
+ww_length = mouthpiece_size[0] + 9;
+ww_width  = mouthpiece_size[1] - 2;
+ww_height = mouthpiece_size[2];
+
+
+fi_length = mouthpiece_size[0] + 5;
+fi_width  = mouthpiece_size[1] - 2;
+fi_height = mouthpiece_size[2];
+
 // Uncomment basic or supported version
 //whistle();
-whistle_with_supports();
+//whistle_with_supports();
+whistle_with_supports2();
 
 
-// Prepared for printing
+module whistle_with_supports2()
+{
+    z_offset = rounding_radius + height*sqrt(2)/2;
+    translate([0, 0, rounding_radius])
+        rotate([90,0,0])
+            whistle();
+    // add a t-shaped supports for mouthpiece
+    support_position = height-mouthpiece_size[2];
+    support_height = (width - mouthpiece_size[1])/2 ;
+    translate([-10,-support_position,0])
+        cube([6,.25,support_height]);
+    translate([-10,-support_position-4,0])
+        cube([6,6,.25]);
+
+    support_position1 = height;
+    translate([-10,-support_position1,0])
+        cube([6,.25,support_height]);
+}
+
+
 module whistle_with_supports()
 {
-    // Rotate on edge and move up - Pythagoras FTW
     z_offset = rounding_radius + height*sqrt(2)/2;
     translate([0, 0, z_offset])
         rotate([135,0,0])
@@ -41,42 +68,57 @@ module whistle() {
     
     difference() {
         body();
-        cube([length,width,height-.5]); // main interior
-        windway_and_fipple();
-    }
-}
-
-
-// Cutout for the windway through the mouthpiece and fipple
-module windway_and_fipple()
-{
-    ww_length = mouthpiece_size[0] + 9;
-    ww_width  = mouthpiece_size[1];
-    ww_height = mouthpiece_size[2];
-    # translate([
+        cube([length,width,height]); // main interior
+        
+        // Cutout Windway
+        translate([
             -(mouthpiece_size[0]+rounding_radius+1), 
             (width - ww_width)/2, 
             height - ww_height
         ]) 
-        cube([ww_length, ww_width, ww_height]);
-    
-    // Still some magic numbers here for tweeking fipple
-    # translate([2.8, (width - ww_width)/2, height - 2.2]) {
-        rotate([0,-20,0])
-            cube([15, ww_width, 5]); // fipple - top cut
-        rotate([0,17,0])
-            cube([15, ww_width, 3]); // fipple - inside cut
+            cube([ww_length, ww_width, ww_height]);
+        
+        // Cutout for fipple block
+        translate([0,(width - fi_width)/2,height - fi_height])
+            cube([fi_length, fi_width, fi_height+rounding_radius]);
     }
+    
+    // form fipple as a seperate piece
+    fipple();
+    
 }
 
+
+module fipple_block() 
+{
+    w = fi_width + 4;
+    translate([0,(width - w)/2, height - fi_height])
+        cube([fi_length, w, fi_height + rounding_radius]);
+}
+
+
+module fipple()
+{
+    // Still some magic numbers here for tweeking fipple
+    difference (){
+        fipple_block();
+        translate([2.8, (width - fi_width)/2, height - 2.75]) {
+            rotate([0,-20,0])
+                cube([15, fi_width, 5]); // fipple - top cut
+            rotate([0,17,0])
+                cube([15, fi_width, 3]); // fipple - inside cut
+        }
+        translate([0, (width - fi_width)/2, height - 2.75])
+            cube([5, fi_width, 10]);
+    }
+}
 
 
 
 // A rounded box with a mouthpiece
 module body () 
 {
-    fillet_rounding = rounding_radius;
-    fillet(r=fillet_rounding,steps=$fn/4) {
+    fillet(r=rounding_radius, steps=$fn/4) {
         // The main body
         rounded_box([length, width, height], rounding_radius);
         
