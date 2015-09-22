@@ -2,9 +2,9 @@ use <fillets.scad>
 
 $fn = 24;  
 
-length = 40;
-width = 35;
-height = 20;
+length = 65;
+width = 45;
+height = 25;
 rounding_radius = 2;
 
 mouthpiece_size = [10, 12, 2.5];
@@ -20,16 +20,17 @@ fi_height = mouthpiece_size[2];
 
 // Uncomment basic or supported version
 //whistle();
-//whistle_with_supports();
-whistle_with_supports2();
+//whistle_with_supports_at_45();
+whistle_with_supports_at_90();
 
 
-module whistle_with_supports2()
+module whistle_with_supports_at_90()
 {
     z_offset = rounding_radius + height*sqrt(2)/2;
     translate([0, 0, rounding_radius])
         rotate([90,0,0])
             whistle();
+    
     // add a t-shaped supports for mouthpiece
     support_position = height-mouthpiece_size[2];
     support_height = (width - mouthpiece_size[1])/2 ;
@@ -44,7 +45,7 @@ module whistle_with_supports2()
 }
 
 
-module whistle_with_supports()
+module whistle_with_supports_at_45 ()
 {
     z_offset = rounding_radius + height*sqrt(2)/2;
     translate([0, 0, z_offset])
@@ -58,8 +59,6 @@ module whistle_with_supports()
         cube([6,.25,support_height]);
     translate([-10,-support_position-2,0])
         cube([6,4,.25]);
-
-    // TODO: add some support for upper edge of fipple
 }
 
 
@@ -68,7 +67,7 @@ module whistle() {
     
     difference() {
         body();
-        cube([length,width,height]); // main interior
+        cube([length, width, height]); // main interior
         
         // Cutout Windway
         translate([
@@ -88,16 +87,14 @@ module whistle() {
 }
 
 
-module fipple_block() 
-{
+module fipple_block() {
     w = fi_width + 4;
-    translate([0,(width - w)/2, height - fi_height])
-        cube([fi_length, w, fi_height + rounding_radius]);
+    translate([0, 0, height - fi_height])
+        cube([fi_length, width, fi_height + rounding_radius]);
 }
 
 
-module fipple()
-{
+module fipple() {
     // Still some magic numbers here for tweeking fipple size
     difference (){
         fipple_block();
@@ -115,8 +112,7 @@ module fipple()
 
 
 // A rounded box with a mouthpiece
-module body () 
-{
+module body () {
     fillet(r=rounding_radius, steps=$fn/4) {
         // The main body
         rounded_box([length, width, height], rounding_radius);
@@ -132,14 +128,9 @@ module body ()
 }
 
 
-module rounded_box(size, radius)
-{
-    x = size[0];
-    y = size[1];
-    
-    minkowski()
-    {
-        cube(size=[x,y,size[2]]);
+module rounded_box(size, radius) {
+    minkowski()     {
+        cube(size);
         sphere(r=radius);
     }
 }
