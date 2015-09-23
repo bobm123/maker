@@ -13,7 +13,6 @@ ww_length = mouthpiece_size[0] + 9;
 ww_width  = mouthpiece_size[1] - 2;
 ww_height = mouthpiece_size[2];
 
-
 fi_length = mouthpiece_size[0] + 7;
 fi_width  = mouthpiece_size[1] - 2;
 fi_height = mouthpiece_size[2];
@@ -34,14 +33,7 @@ module whistle_with_supports_at_90()
     // add a t-shaped supports for mouthpiece
     support_position = height-mouthpiece_size[2];
     support_height = (width - mouthpiece_size[1])/2 ;
-//    translate([-10,-support_position,0])
-//        cube([6,.25,support_height]);
-//    translate([-10,-support_position-4,0])
-//        cube([6,6,.25]);
 
-    //support_position1 = height;
-    //translate([-10,-support_position1,0])
-//        cube([6,.25,support_height]);
     t_support_x([-10,-support_position,0], 6, support_height);
     t_support_x([-10,-height,0], 6, support_height);
 }
@@ -69,6 +61,7 @@ module whistle_with_supports_at_45 ()
     t_support_x([0, fp_y, 0], fi_length, fp_z);
 }
 
+
 // make a t-shaped support structure along x-axis
 module t_support_x(pos, l, h)
 {
@@ -78,6 +71,7 @@ module t_support_x(pos, l, h)
             cube([l, 4,.25]);
     }
 }
+
 
 // A hollow box with a windway and fipple
 module whistle() {
@@ -100,8 +94,8 @@ module whistle() {
     
     // form fipple as a seperate piece
     fipple();
-    
 }
+
 
 
 module fipple_block() {
