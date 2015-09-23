@@ -1,4 +1,4 @@
-use <fillets.scad>
+use <fillet.scad>
 
 $fn = 24;  
 
@@ -6,6 +6,7 @@ $fn = 24;
 //width = 45;
 //height = 25;
 rounding_radius = 2;
+top_thinckness = 2.5;
 
 mouthpiece_size = [10, 12, 2.5];
 
@@ -29,7 +30,7 @@ module whistle(length, width, height) {
     
     difference() {
         body(length, width, height);
-        cube([length, width, height]); // main interior
+        cube([length, width+10, height-top_thinckness]); // main interior
         
         // Cutout Windway
         translate([
@@ -48,10 +49,9 @@ module whistle(length, width, height) {
 }
 
 
-
 module fipple_block(w, h) {
-    translate([0, 0, h - fi_height])
-        cube([fi_length, w, fi_height + rounding_radius]);
+    translate([0, 0, h - top_thinckness])
+        cube([fi_length, w, top_thinckness + rounding_radius]);
 }
 
 
