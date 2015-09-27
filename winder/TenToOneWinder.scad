@@ -57,8 +57,8 @@ module assembly_drawing() {
             translate([0, 0, 11]) case_top();
             translate([0, 0, -3]) case_bottom();
             translate([0, 0, -24]) crank_arm();
-            translate([-84/2, 0, -29.5]) crank_knob();
-            translate([-75,0,-47])  crank_pin();            
+            translate([-75, 0, -29.5]) crank_knob();
+            translate([-75, 0, -47])  crank_pin();            
             translate([0, 0, -24]) drive_pin(); 
             
             // for debug reference
@@ -132,19 +132,20 @@ module crank_arm() {
 
 
 module crank_knob() {
-    rotate([180, 0, 0])
-        difference () {
-            minkowski() {
-                linear_extrude (16)
-                    intersection() {
-                        square ([12,6], center=true);
-                        circle(6);
-                    }
-                sphere(2);
+    translate(input_gear_pos)
+        rotate([180, 0, 0])
+            difference () {
+                minkowski() {
+                    linear_extrude (16)
+                        intersection() {
+                            square ([12,6], center=true);
+                            circle(6);
+                        }
+                    sphere(2);
+                }
+                translate([0, 0, 12]) cylinder(6, 3.5, 3.5);
+                translate([0, 0, -2]) cylinder(20, 2.1, 2.1);
             }
-            translate([0, 0, 12]) cylinder(6, 3.5, 3.5);
-            translate([0, 0, -2]) cylinder(20, 2, 2);
-        }
 }
 
 
