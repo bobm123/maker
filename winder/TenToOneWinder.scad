@@ -6,8 +6,11 @@
 // - Decouple some of the design cutouts from the assembly 
 // view. Make sure can generate an exploded view without 
 // breaking the parts.
-// - Gear details: thickness, grub screws and magnets
 // - Define shell spacers
+// - redraw gear dxf w/o centers
+// - screw holes in case back
+// - Use #6 patterns for crank arm and pin
+// - Add magnet cutout for drive gear
 
 
 use <fillets.scad>
@@ -70,8 +73,8 @@ rotate([0, 0, 0]) {
 module assembly_drawing() {
     difference () {
         union() {
-            drive_train();
-            translate([0, 0, 11]) case_top();
+            translate([0, 0, 1]) drive_train();
+            translate([0, 0, 14]) case_top();
             translate([0, 0, -3]) case_bottom();
             translate([0, 0, -24]) crank_arm();
             translate([-75, 0, -29.5]) crank_knob();
@@ -91,7 +94,7 @@ module crankshaft_core() {
         linear_extrude (40.1)
             rotate([0, 0, 45]) square(8, center=true);
     translate([0, 0, 10])
-        cylinder(13, 8*sqrt(2)/2, 8);
+        cylinder(14, 8*sqrt(2)/2, 8);
     
 }
 
@@ -272,15 +275,15 @@ module place_shafts() {
         translate([0, 0, -20])
             translate(input_gear_pos) cylinder(55, shaft_dia/2, shaft_dia/2);
         translate(mid_gear_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
-        translate(drive_gear_pos) cylinder(40, shaft_dia/2, shaft_dia/2);
+        translate(drive_gear_pos) cylinder(42, shaft_dia/2, shaft_dia/2);
     }
     
     // Screw positions
-    #translate([0, 0, -7.5]) {
-        translate(screw1_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
-        translate(screw2_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
-        translate(screw3_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
-    }
+    //#translate([0, 0, -7.5]) {
+    //    translate(screw1_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
+    //    translate(screw2_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
+    //    translate(screw3_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
+    //}
 }
 
 
@@ -300,7 +303,7 @@ module mid_gear() {
         linear_extrude(5)
             gear27();
         translate([0,0,5])
-            linear_extrude(5)
+            linear_extrude(7)
                 gear9();
     }
 }
@@ -308,18 +311,39 @@ module mid_gear() {
 
 module imput_gear() {
     color("Gold", alpha) {
-        translate([0,0,5])
-            linear_extrude(5)
-                gear30();
-        cylinder(5, 15/2, 15/2);
+        difference () {
+            union () {
+                translate([0,0,6])
+                    linear_extrude(6)
+                        gear30();
+                translate([0, 0, -1])
+                    cylinder(7, 15/2, 15/2);
+            }
+            translate([0,0,-25])
+                crankshaft_core();
+            translate([15,0,8.25])
+                cube(4.75, center=true);    
+        }
     }
 }
 
 module drive_gear() {
     color("Sienna", alpha) {
-        linear_extrude(5)
-            gear9();
-        translate([0,0,5])
-            cylinder(5, 17.51/2, 17.51/2);
+        difference () {
+            union() {
+                linear_extrude(6)
+                    gear9();
+                translate([0,0,6])
+                    cylinder(6, 17.51/2, 17.51/2);
+            }
+            translate([0,0,6.1])
+                cylinder(6, shaft_dia/2, shaft_dia/2);
+            translate([0, shaft_dia/2, 9])
+                rotate([-90, 180, 0]){
+                    machine_screw6(10);
+                    hex_nut6_slot(10);
+                }
+                
+        }
     }
 }
