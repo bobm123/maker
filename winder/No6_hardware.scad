@@ -4,8 +4,8 @@
 // 
 IN_TO_MM = 25.4;
 
-translate ([0, 0, 11]) hex_nut6(tol=0.0, solid=false);
-machine_screw6(1/2 * IN_TO_MM, tol=0.1);
+translate ([0, 0, 13]) hex_nut6(tol=0.0, solid=false);
+machine_screw6(1/2 * IN_TO_MM, tol=0.0);
 
 module hex_nut6(tol = 0, solid = false) {
     nut6_outer_dia = IN_TO_MM * 23 / 64;
