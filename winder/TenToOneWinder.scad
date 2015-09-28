@@ -8,12 +8,11 @@
 // breaking the parts.
 // - Gear details: thickness, grub screws and magnets
 // - Define shell spacers
-// - Check diameter of hardware
-// - Hex nut and screw head cutouts for case parts.
-//
 
-use <GearSet_10to1.scad>
+
 use <fillets.scad>
+use <GearSet_10to1.scad>
+use <No6_Hardware.scad>
 
 $fn = 24;
 
@@ -35,18 +34,36 @@ shaft_dia = 1.580;
 alpha = 1;
 
 // Place the screw around the case shell 
-screw1_pos = [(gear9_dia+gear30_dia)/4+14, gear27_dia/4 +(gear9_dia+gear27_dia)/4 +3, 0];
-screw2_pos = [(gear9_dia+gear30_dia)/4+.5, -(gear27_dia+gear30_dia)/4-2, 0];
-screw3_pos = [-(gear9_dia+gear27_dia)/4+1.5, (gear9_dia+gear27_dia+gear27_dia)/4+.5, 0];
+screw1_pos = [(gear9_dia+gear30_dia)/4+8, gear27_dia/4 +(gear9_dia+gear27_dia)/4+5.6, 0];
+screw2_pos = [(gear9_dia+gear30_dia)/4+.5, -(gear27_dia+gear30_dia)/4-2.05, 0];
+screw3_pos = [-(gear9_dia+gear27_dia)/4-.75, (gear9_dia+gear27_dia+gear27_dia)/4-4, 0];
 
-
-// Each Gears position, defines the case size 
+// Each Gear's position, this defines the basic case size 
 input_gear_pos = [gear_slop+(gear30_dia+gear9_dia)/2, 0, 0];
 mid_gear_pos = [0, 0, 0,];
 drive_gear_pos = [0, gear_slop+(gear27_dia+gear9_dia)/2, 0];
 
+// View the complete assembly (don't print this)
+rotate([90, 0, -90])
+    assembly_drawing();
 
-assembly_drawing();
+// Working view of case bottom
+/*
+rotate([180, 0, 0]) {
+    case_bottom();
+    case_shell();
+    place_shafts();
+}
+*/
+
+// Working view of case top
+/*
+rotate([0, 0, 0]) {
+    case_top();
+    //case_shell();
+    //place_shafts();
+}
+*/
 
 
 // Winder Assembly Drawing
@@ -58,13 +75,13 @@ module assembly_drawing() {
             translate([0, 0, -3]) case_bottom();
             translate([0, 0, -24]) crank_arm();
             translate([-75, 0, -29.5]) crank_knob();
-            translate([-75, 0, -47])  crank_pin();            
+            translate([-75, 0, -47]) crank_pin();            
             translate([0, 0, -24]) drive_pin(); 
             
             // for debug reference
             //case_shell();
         }
-        place_shafts();
+        //place_shafts();
     }
 }
 
@@ -133,7 +150,7 @@ module crank_arm() {
 
 module crank_knob() {
     translate(input_gear_pos)
-        rotate([180, 0, 0])
+        rotate([180, 0, 90])
             difference () {
                 minkowski() {
                     linear_extrude (16)
@@ -164,13 +181,26 @@ module crank_pin()
 
 module case_top() {
     color("Blue", 1) {
-        fillet(r=2,steps=6) {
-            minkowski() {
-                case_shell();
-                rounding_upper(2);
+        difference () {
+            fillet(r=2,steps=6) {
+                minkowski() {
+                    case_shell();
+                    rounding_upper(2);
+                }
+                translate([0, 0, 3.9])
+                    translate(drive_gear_pos) cylinder(15, 6, 4);
             }
-            translate([0, 0, 3.9])
-                translate(drive_gear_pos) cylinder(15, 6, 4);
+            // Shaft Positions
+            translate(drive_gear_pos) cylinder(40, shaft_dia/2, shaft_dia/2);
+            translate(input_gear_pos) cylinder(55, shaft_dia/2, shaft_dia/2);
+            translate(mid_gear_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
+            
+            // Screw positions
+            #translate([0, 0, 5]) {
+                translate(screw1_pos) rotate([180, 0, 0]) machine_screw6(21, tol=.1);
+                translate(screw2_pos) rotate([180, 0, 0]) machine_screw6(21, tol=.1);
+                translate(screw3_pos) rotate([180, 0, 0]) machine_screw6(21, tol=.1);
+            }    
         }
     }
 }
@@ -190,6 +220,19 @@ module case_bottom() {
             translate([0, 0, -21])
                 translate(input_gear_pos)
                     crankshaft_core();
+            
+            // Gear Axels
+            translate([0, 0, -7.5]) {
+                translate(mid_gear_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
+                translate(drive_gear_pos) cylinder(40, shaft_dia/2, shaft_dia/2);
+            }
+            #translate([0, 0, -2]) {
+                translate(screw1_pos) 
+                    rotate([0, 0, -20]) hex_nut6(tol = .1, solid=true);
+                translate(screw2_pos) 
+                    rotate([0, 0, -4.25]) hex_nut6(tol = .1, solid=true);
+                translate(screw3_pos) hex_nut6(tol = .1, solid=true);
+            }
         }
     }
 }
@@ -213,7 +256,7 @@ module rounding_upper(rr) {
 
 
 module case_shell() {
-    linear_extrude(2) {
+    linear_extrude(3) {
         hull() {
             translate(input_gear_pos) circle(case_clearence+gear30_dia/2, $fn=48);
             translate(mid_gear_pos) circle(case_clearence+gear27_dia/2, $fn=48);
