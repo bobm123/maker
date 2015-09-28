@@ -5,12 +5,12 @@
 IN_TO_MM = 25.4;
 
 translate ([0, 0, 11]) hex_nut6(tol=0.0, solid=false);
-machine_screw6(1/2 * IN_TO_MM, tol=0.0);
+machine_screw6(1/2 * IN_TO_MM, tol=0.1);
 
 module hex_nut6(tol = 0, solid = false) {
     nut6_outer_dia = IN_TO_MM * 23 / 64;
     nut6_thickness = IN_TO_MM * 7 / 64;
-    diameter6      = IN_TO_MM * 0.138;
+    diameter6      = IN_TO_MM * 9 / 64;
     
     linear_extrude (nut6_thickness+tol) {
         difference () {
@@ -28,7 +28,12 @@ module machine_screw6(length, tol=0)
     head_height6 = IN_TO_MM * 0.083;
     head_dia6    = IN_TO_MM * 0.262;
     diameter6    = IN_TO_MM * 0.138;
-    cylinder(head_height6, tol+head_dia6/2, tol+diameter6/2, $fn=24);
-    cylinder(length, tol+diameter6/2, tol+diameter6/2, $fn=24);
+    union() {
+        translate([0, 0, tol]) {
+            cylinder(head_height6, tol+head_dia6/2, tol+diameter6/2, $fn=24);
+            cylinder(length-tol, tol+diameter6/2, tol+diameter6/2, $fn=24);
+        }
+        cylinder(tol+.01, tol+head_dia6/2, tol+head_dia6/2, $fn=24);
+    }
 }
 
