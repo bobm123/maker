@@ -20,7 +20,7 @@
   Spur1=True
   Rack1=False
   Ring1=False
-  ShaftHoleDia1=1.58
+  ShaftHoleDia1=0
   Addendum1=0.25
 
 # Gear2:
@@ -67,4 +67,4 @@
 
   Units=mm
 
-  ActiveTab=GearTeeth
+  ActiveTab=Shaft

@@ -13,7 +13,7 @@
   Thickness90deg=0
 
 # Gear1:
-  ShowGear1=True
+  ShowGear1=False
   ToothCount1=27
   ShowSpokes1=False
   SpokeCount1=5
@@ -24,14 +24,14 @@
   Addendum1=0.25
 
 # Gear2:
-  ShowGear2=False
+  ShowGear2=True
   ToothCount2=9
   ShowSpokes2=False
   SpokeCount2=5
   Spur2=True
   Rack2=False
   Ring2=False
-  ShaftHoleDia2=1.58
+  ShaftHoleDia2=0
   Addendum2=0.25
 
 # Chain mode parameters:
@@ -51,7 +51,7 @@
 
 # Display options:
   ScreenViewWidth=100
-  Rotation=10
+  Rotation=62
   ShowPitchDia=False
   ShowCenter=False
   ShowLineOfContact=False

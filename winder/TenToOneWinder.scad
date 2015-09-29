@@ -7,10 +7,7 @@
 // view. Make sure can generate an exploded view without 
 // breaking the parts.
 // - Define shell spacers
-// - redraw gear dxf w/o centers
-// - screw holes in case back
 // - Use #6 patterns for crank arm and pin
-// - Add magnet cutout for drive gear
 
 
 use <fillets.scad>
@@ -50,23 +47,14 @@ drive_gear_pos = [0, gear_slop+(gear27_dia+gear9_dia)/2, 0];
 //rotate([90, 0, -90]) assembly_drawing();
 
 // Working view of case bottom
-
-rotate([180, 0, 0]) {
-    case_bottom();
-    //case_shell();
-    //place_shafts();
-}
+//rotate([180, 0, 0]) case_bottom();
 
 
 // Working view of case top
-/*
-rotate([0, 0, 0]) {
-    case_top();
-    //case_shell();
-    //place_shafts();
-}
-*/
+//rotate([0, 0, 0]) case_top();
 
+
+drive_train();
 
 // Winder Assembly Drawing
 module assembly_drawing() {
@@ -295,27 +283,27 @@ module place_shafts() {
 
 module drive_train()
 {
-    mid_gear();
-    translate(input_gear_pos)
-        rotate([0, 0, 90])
-            imput_gear();
-    translate(drive_gear_pos)
-        drive_gear();
+    rotate([0, 0, 60]) mid_gear();
+    translate(input_gear_pos) rotate([0, 0, 90]) input_gear();
+    translate(drive_gear_pos)  drive_gear();
 }
 
 
 module mid_gear() {
     color("Goldenrod", alpha) {
-        linear_extrude(5)
-            gear27();
-        translate([0,0,5])
-            linear_extrude(7)
-                gear9();
+        difference() {
+            union () {
+                linear_extrude(5) gear27();
+                translate([0,0,5]) linear_extrude(7) gear9();
+            }
+            #translate([0,0,-1])
+                cylinder(14, shaft_dia/2, shaft_dia/2);
+        }
     }
 }
 
 
-module imput_gear() {
+module input_gear() {
     color("Gold", alpha) {
         difference () {
             union () {
@@ -342,8 +330,8 @@ module drive_gear() {
                 translate([0,0,6])
                     cylinder(6, 17.51/2, 17.51/2);
             }
-            translate([0,0,6.1])
-                cylinder(6, shaft_dia/2, shaft_dia/2);
+            #translate([0,0,-1])
+                cylinder(14, shaft_dia/2, shaft_dia/2);
             translate([0, shaft_dia/2, 9])
                 rotate([-90, 180, 0]){
                     machine_screw6(10);
