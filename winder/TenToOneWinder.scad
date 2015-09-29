@@ -39,24 +39,24 @@ drive_gear_pos = [0, gear_slop+(gear27_dia+gear9_dia)/2, 0];
 rotate([90, 0, -90]) assembly_drawing();
 
 // Working view of case bottom
-//rotate([180, 0, 0]) case_bottom();
+//rotate([180, 0, 0]) case_bottom_stl();
 
 // Working view of case top
-//rotate([0, 0, 0]) case_top();
+//rotate([0, 0, 0]) case_top_stl();
 
 // Winder Assembly Drawing
 module assembly_drawing() {
     difference () {
         union() {
-            translate([0, 0, 14]) case_top();
+            translate([0, 0, 14]) case_top_stl();
             translate([0, 0, 1]) drive_train();
-            translate([0, 0, -3]) case_bottom();
+            translate([0, 0, -3]) case_bottom_stl();
             translate([0, 0, -4]) case_spacers();
             translate(input_gear_pos) {
-                translate([0, 0, -24]) crank_arm();
-                translate([-75, 0, -29.5]) crank_knob();
-                translate([-75, 0, -47]) crank_pin();            
-                translate([0, 0, -24]) drive_pin(); 
+                translate([0, 0, -24]) crank_arm_stl();
+                translate([-75, 0, -29.5]) crank_knob_stl();
+                translate([-75, 0, -47]) crank_pin_stl();            
+                translate([0, 0, -24]) drive_pin_stl(); 
             }
             // for debug reference
             //case_shell();
@@ -76,7 +76,7 @@ module crankshaft_core() {
 }
 
 
- module drive_pin() {
+ module drive_pin_stl() {
     rotate([0, 0, 45])
         difference() {
             rotate([0,0,-45])
@@ -89,7 +89,7 @@ module crankshaft_core() {
 }
 
 
-module crank_arm() {
+module crank_arm_stl() {
     difference () {
         union() {
             minkowski() {
@@ -119,7 +119,7 @@ module crank_arm() {
 }
 
 
-module crank_knob() {
+module crank_knob_stl() {
     rotate([180, 0, 90])
         difference () {
             minkowski() {
@@ -136,7 +136,7 @@ module crank_knob() {
 }
 
 
-module crank_pin()
+module crank_pin_stl()
 {
     difference () {
         union() {
@@ -148,7 +148,7 @@ module crank_pin()
 }
 
 
-module case_top() {
+module case_top_stl() {
     color("Blue", 1) {
         difference () {
             fillet(r=2,steps=6) {
@@ -175,7 +175,7 @@ module case_top() {
 }
 
 
-module case_bottom() {
+module case_bottom_stl() {
     color("Blue", 1) {
         difference () {
             fillet(r=2,steps=6) {
@@ -215,13 +215,13 @@ module case_bottom() {
 
 
 module case_spacers () {
-    translate(screw1_pos) spacer_tube();
-    translate(screw2_pos) spacer_tube();
-    translate(screw3_pos) spacer_tube();
+    translate(screw1_pos) spacer_tube_stl();
+    translate(screw2_pos) spacer_tube_stl();
+    translate(screw3_pos) spacer_tube_stl();
 }
 
 
-module spacer_tube() {
+module spacer_tube_stl() {
     color("Blue", 1) {
         difference ()  {
             translate([0, 0, 4]) cylinder(14, 4, 4);
@@ -271,13 +271,13 @@ module place_shafts() {
 
 module drive_train()
 {
-    rotate([0, 0, 60]) mid_gear();
-    translate(input_gear_pos) rotate([0, 0, 90]) input_gear();
-    translate(drive_gear_pos)  drive_gear();
+    rotate([0, 0, 60]) mid_gear_stl();
+    translate(input_gear_pos) rotate([0, 0, 90]) input_gear_stl();
+    translate(drive_gear_pos)  drive_gear_stl();
 }
 
 
-module mid_gear() {
+module mid_gear_stl() {
     color("Goldenrod", alpha) {
         difference() {
             union () {
@@ -291,7 +291,7 @@ module mid_gear() {
 }
 
 
-module input_gear() {
+module input_gear_stl() {
     color("Gold", alpha) {
         difference () {
             union () {
@@ -309,7 +309,7 @@ module input_gear() {
     }
 }
 
-module drive_gear() {
+module drive_gear_stl() {
     color("Sienna", alpha) {
         difference () {
             union() {
