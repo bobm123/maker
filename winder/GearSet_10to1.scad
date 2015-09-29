@@ -6,6 +6,8 @@
 // 9 tooth. See TBD for description of method.
 
 
+gear30();
+
 module gear9() {
     // Import Gear Generated with 9 teeth. Use
     // reported overall diameter center on origin

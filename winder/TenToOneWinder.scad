@@ -7,7 +7,6 @@
 // view. Make sure can generate an exploded view without 
 // breaking the parts.
 // - Define shell spacers
-// - Use #6 patterns for crank arm and pin
 
 
 use <fillets.scad>
@@ -44,7 +43,7 @@ mid_gear_pos = [0, 0, 0,];
 drive_gear_pos = [0, gear_slop+(gear27_dia+gear9_dia)/2, 0];
 
 // View the complete assembly (don't print this)
-//rotate([90, 0, -90]) assembly_drawing();
+rotate([90, 0, -90]) assembly_drawing();
 
 // Working view of case bottom
 //rotate([180, 0, 0]) case_bottom();
@@ -52,9 +51,6 @@ drive_gear_pos = [0, gear_slop+(gear27_dia+gear9_dia)/2, 0];
 
 // Working view of case top
 //rotate([0, 0, 0]) case_top();
-
-
-drive_train();
 
 // Winder Assembly Drawing
 module assembly_drawing() {
@@ -126,12 +122,10 @@ module crank_arm() {
                                 import("MaxLogo.dxf");
             }
             crankshaft_core();
-            translate([-75, 0, -4]) 
-                linear_extrude (28)
-                    circle(1.5);
-            translate([-75, 0, 8]) 
-                linear_extrude (2)
-                    circle(3.2, $fn=6);
+            translate([-75, 0, -23]) machine_screw6(33, tol=0.1);
+            #translate([-75, 0, 7.25]) hex_nut6(tol=0.1);
+            //translate([-75, 0, -4]) linear_extrude (28) circle(1.5);
+            //translate([-75, 0, 8]) linear_extrude (2) circle(3.2, $fn=6);
         }
     }
     
@@ -164,7 +158,7 @@ module crank_pin()
                 translate([0, 0, 0]) cylinder(4, 3, 3);
                 translate([0, 0, 0]) cylinder(20, 2, 2);
             }
-            translate([0, 0, 0]) cylinder(20, 1.5, 1.5);
+            #machine_screw6(33);
         }
 }
 
