@@ -47,17 +47,16 @@ mid_gear_pos = [0, 0, 0,];
 drive_gear_pos = [0, gear_slop+(gear27_dia+gear9_dia)/2, 0];
 
 // View the complete assembly (don't print this)
-rotate([90, 0, -90])
-    assembly_drawing();
+//rotate([90, 0, -90]) assembly_drawing();
 
 // Working view of case bottom
-/*
+
 rotate([180, 0, 0]) {
     case_bottom();
-    case_shell();
-    place_shafts();
+    //case_shell();
+    //place_shafts();
 }
-*/
+
 
 // Working view of case top
 /*
@@ -230,11 +229,18 @@ module case_bottom() {
                 translate(drive_gear_pos) cylinder(40, shaft_dia/2, shaft_dia/2);
             }
             #translate([0, 0, -2]) {
-                translate(screw1_pos) 
+                translate(screw1_pos) {
                     rotate([0, 0, -20]) hex_nut6(tol = .1, solid=true);
-                translate(screw2_pos) 
+                    translate([0, 0, 25]) rotate([180, 0, 0]) machine_screw6(25);
+                }
+                translate(screw2_pos) {
                     rotate([0, 0, -4.25]) hex_nut6(tol = .1, solid=true);
-                translate(screw3_pos) hex_nut6(tol = .1, solid=true);
+                    translate([0, 0, 25]) rotate([180, 0, 0]) machine_screw6(25);
+                }
+                translate(screw3_pos) {
+                    hex_nut6(tol = .1, solid=true);
+                    translate([0, 0, 25]) rotate([180, 0, 0]) machine_screw6(25);
+                }
             }
         }
     }

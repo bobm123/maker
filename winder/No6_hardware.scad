@@ -42,7 +42,6 @@ module machine_screw6(length, tol=0)
 module hex_nut6_slot(length, tol = 0) {
     nut6_outer_dia = IN_TO_MM * 23 / 64;
     nut6_thickness = IN_TO_MM * 7 / 64;
-    diameter6      = IN_TO_MM * 9 / 64;
     
     linear_extrude (nut6_thickness+tol) {
         circle(tol + nut6_outer_dia/2, $fn = 6);
