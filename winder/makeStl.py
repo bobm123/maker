@@ -24,7 +24,10 @@ def gen_stl_files(project, parts_list, scad_path):
         print(cmd)
         call(cmd)
             
-def main(argv, argc):    
+def main(argv, argc):
+    '''
+    Generates .stl files from 'parts' (modules with names ending in _stl) found in a .scad file
+    '''
     if argc < 1:
         print("generates .stl files from module named <somename>_stl()\nusage: myproject.scad")
         exit(0)
