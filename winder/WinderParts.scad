@@ -4,10 +4,15 @@
 //
 use <TenToOneWinder.scad>
 
-//drive_train(); // not ready to print yet
+//drive_gear();
+//mid_gear();
+//input_gear();
+//rotate([0, 0, -45]) drive_pin();
+
 case_top();
 //case_bottom();
+//spacer_tube();
+
 //crank_arm();
 //crank_knob();
 //crank_pin();
-//drive_pin();

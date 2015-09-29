@@ -1,12 +1,6 @@
-// Design of a 10:1 rubber motor winder.
-// Intended so all the part fit on a 10 x 10 x 10 cm 
-// 3D printer.
-
-// TODO: 
-// - Decouple some of the design cutouts from the assembly 
-// view. Make sure can generate an exploded view without 
-// breaking the parts.
-// - Adjust shaft sizes
+// Design of a 10:1 motor winder for small rubber powerd
+// model planes. Designed so all the part fit on a small
+// 10x10x10cm 3D printer.
 
 use <fillets.scad>
 use <GearSet_10to1.scad>
@@ -26,7 +20,7 @@ gear_slop = .5;
 case_clearence = 4;
 
 // Diameter of the 1/8" shaft hardware
-shaft_dia = 1.580;
+shaft_dia = 3.175;
 
 // Display Transparency (alpha)
 alpha = 1;
@@ -47,16 +41,8 @@ rotate([90, 0, -90]) assembly_drawing();
 // Working view of case bottom
 //rotate([180, 0, 0]) case_bottom();
 
-
 // Working view of case top
 //rotate([0, 0, 0]) case_top();
-
-module spacer_tube() {
-    difference ()  {
-        translate([0, 0, 4]) cylinder(14, 4, 4);
-        machine_screw6(22);
-    }
-}
 
 // Winder Assembly Drawing
 module assembly_drawing() {
@@ -66,11 +52,12 @@ module assembly_drawing() {
             translate([0, 0, 1]) drive_train();
             translate([0, 0, -3]) case_bottom();
             translate([0, 0, -4]) case_spacers();
-            translate([0, 0, -24]) crank_arm();
-            translate([-75, 0, -29.5]) crank_knob();
-            translate([-75, 0, -47]) crank_pin();            
-            translate([0, 0, -24]) drive_pin(); 
-            
+            translate(input_gear_pos) {
+                translate([0, 0, -24]) crank_arm();
+                translate([-75, 0, -29.5]) crank_knob();
+                translate([-75, 0, -47]) crank_pin();            
+                translate([0, 0, -24]) drive_pin(); 
+            }
             // for debug reference
             //case_shell();
         }
@@ -90,83 +77,74 @@ module crankshaft_core() {
 
 
  module drive_pin() {
-    translate(input_gear_pos) {
-        rotate([0, 0, 45])
-            difference() {
-                rotate([0,0,-45])
-                    crankshaft_core();
+    rotate([0, 0, 45])
+        difference() {
+            rotate([0,0,-45])
+                crankshaft_core();
 
-                linear_extrude(30)
-                    translate([8,0,0])
-                        square([8,14], center=true);
-            }
-    }
+            linear_extrude(30)
+                translate([8,0,0])
+                    square([8,14], center=true);
+        }
 }
 
 
 module crank_arm() {
-    translate(input_gear_pos) {
-        difference () {
-            union() {
-                minkowski() {
-                   linear_extrude (8) {
-                        circle(8);
-                        translate([-75, 0, 0]) circle(8);
-                        translate([-75, -5, 0]) square([75,10]);
-                    }
-                    sphere(2);
+    difference () {
+        union() {
+            minkowski() {
+               linear_extrude (8) {
+                    circle(8);
+                    translate([-75, 0, 0]) circle(8);
+                    translate([-75, -5, 0]) square([75,10]);
                 }
-                translate([0, 0, -3]) {
-                    linear_extrude (1) {
-                        circle(8);
-                        translate([-75, 0, 0]) circle(7);
-                    }
-                }
-                translate([-8.8, -4.2, -3])
-                    linear_extrude (1)
-                        scale([.625,1,1])
-                            rotate([0,180,0])
-                                import("MaxLogo.dxf");
+                sphere(2);
             }
-            crankshaft_core();
-            translate([-75, 0, -23]) machine_screw6(33, tol=0.1);
-            #translate([-75, 0, 7.25]) hex_nut6(tol=0.1);
-            //translate([-75, 0, -4]) linear_extrude (28) circle(1.5);
-            //translate([-75, 0, 8]) linear_extrude (2) circle(3.2, $fn=6);
+            translate([0, 0, -3]) {
+                linear_extrude (1) {
+                    circle(8);
+                    translate([-75, 0, 0]) circle(7);
+                }
+            }
+            translate([-8.8, -4.2, -3])
+                linear_extrude (1)
+                    scale([.625,1,1])
+                        rotate([0,180,0])
+                            import("MaxLogo.dxf");
         }
+        crankshaft_core();
+        translate([-75, 0, -23]) machine_screw6(33, tol=0.1);
+        #translate([-75, 0, 7.25]) hex_nut6(tol=0.1);
     }
-    
 }
 
 
 module crank_knob() {
-    translate(input_gear_pos)
-        rotate([180, 0, 90])
-            difference () {
-                minkowski() {
-                    linear_extrude (16)
-                        intersection() {
-                            square ([12,6], center=true);
-                            circle(6);
-                        }
-                    sphere(2);
-                }
-                translate([0, 0, 12]) cylinder(6, 3.5, 3.5);
-                translate([0, 0, -2]) cylinder(20, 2.1, 2.1);
+    rotate([180, 0, 90])
+        difference () {
+            minkowski() {
+                linear_extrude (16)
+                    intersection() {
+                        square ([12,6], center=true);
+                        circle(6);
+                    }
+                sphere(2);
             }
+            translate([0, 0, 12]) cylinder(6, 3.5, 3.5);
+            translate([0, 0, -2]) cylinder(20, 2.1, 2.1);
+        }
 }
 
 
 module crank_pin()
 {
-    translate(input_gear_pos)
-        difference () {
-            union() {
-                translate([0, 0, 0]) cylinder(4, 3, 3);
-                translate([0, 0, 0]) cylinder(20, 2, 2);
-            }
-            #machine_screw6(33);
+    difference () {
+        union() {
+            translate([0, 0, 0]) cylinder(4, 3, 3);
+            translate([0, 0, 0]) cylinder(20, 2, 2);
         }
+        #machine_screw6(33);
+    }
 }
 
 
@@ -237,13 +215,20 @@ module case_bottom() {
 
 
 module case_spacers () {
-    color("Blue", 1) {
-        translate(screw1_pos) spacer_tube();
-        translate(screw2_pos) spacer_tube();
-        translate(screw3_pos) spacer_tube();
-    }
+    translate(screw1_pos) spacer_tube();
+    translate(screw2_pos) spacer_tube();
+    translate(screw3_pos) spacer_tube();
 }
 
+
+module spacer_tube() {
+    color("Blue", 1) {
+        difference ()  {
+            translate([0, 0, 4]) cylinder(14, 4, 4);
+            machine_screw6(22);
+        }
+    }
+}
 
 module rounding_lower(rr) {
     difference() {
@@ -281,13 +266,6 @@ module place_shafts() {
         translate(mid_gear_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
         translate(drive_gear_pos) cylinder(42, shaft_dia/2, shaft_dia/2);
     }
-    
-    // Screw positions
-    //#translate([0, 0, -7.5]) {
-    //    translate(screw1_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
-    //    translate(screw2_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
-    //    translate(screw3_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
-    //}
 }
 
 
