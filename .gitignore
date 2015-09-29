@@ -1,3 +1,4 @@
 *.stl
 *.jpg
 *.JPG
+__*.scad
