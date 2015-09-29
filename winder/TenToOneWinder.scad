@@ -6,8 +6,7 @@
 // - Decouple some of the design cutouts from the assembly 
 // view. Make sure can generate an exploded view without 
 // breaking the parts.
-// - Define shell spacers
-
+// - Adjust shaft sizes
 
 use <fillets.scad>
 use <GearSet_10to1.scad>
@@ -34,8 +33,8 @@ alpha = 1;
 
 // Place the screw around the case shell 
 screw1_pos = [(gear9_dia+gear30_dia)/4+8, gear27_dia/4 +(gear9_dia+gear27_dia)/4+5.6, 0];
-screw2_pos = [(gear9_dia+gear30_dia)/4+.5, -(gear27_dia+gear30_dia)/4-2.05, 0];
-screw3_pos = [-(gear9_dia+gear27_dia)/4-.75, (gear9_dia+gear27_dia+gear27_dia)/4-4, 0];
+screw2_pos = [(gear9_dia+gear30_dia)/4-2.5, -(gear27_dia+gear30_dia)/4-2.05, 0];
+screw3_pos = [-(gear9_dia+gear27_dia)/4+1.7, (gear9_dia+gear27_dia+gear27_dia)/4, 0];
 
 // Each Gear's position, this defines the basic case size 
 input_gear_pos = [gear_slop+(gear30_dia+gear9_dia)/2, 0, 0];
@@ -52,13 +51,21 @@ rotate([90, 0, -90]) assembly_drawing();
 // Working view of case top
 //rotate([0, 0, 0]) case_top();
 
+module spacer_tube() {
+    difference ()  {
+        translate([0, 0, 4]) cylinder(14, 4, 4);
+        machine_screw6(22);
+    }
+}
+
 // Winder Assembly Drawing
 module assembly_drawing() {
     difference () {
         union() {
-            translate([0, 0, 1]) drive_train();
             translate([0, 0, 14]) case_top();
+            translate([0, 0, 1]) drive_train();
             translate([0, 0, -3]) case_bottom();
+            translate([0, 0, -4]) case_spacers();
             translate([0, 0, -24]) crank_arm();
             translate([-75, 0, -29.5]) crank_knob();
             translate([-75, 0, -47]) crank_pin();            
@@ -210,21 +217,30 @@ module case_bottom() {
                 translate(mid_gear_pos) cylinder(25, shaft_dia/2, shaft_dia/2);
                 translate(drive_gear_pos) cylinder(40, shaft_dia/2, shaft_dia/2);
             }
-            #translate([0, 0, -2]) {
+            translate([0, 0, -2]) {
                 translate(screw1_pos) {
-                    rotate([0, 0, -20]) hex_nut6(tol = .1, solid=true);
+                    #rotate([0, 0, -20]) hex_nut6(tol = .1, solid=true);
                     translate([0, 0, 25]) rotate([180, 0, 0]) machine_screw6(25);
                 }
                 translate(screw2_pos) {
-                    rotate([0, 0, -4.25]) hex_nut6(tol = .1, solid=true);
+                    #rotate([0, 0, -4.25]) hex_nut6(tol = .1, solid=true);
                     translate([0, 0, 25]) rotate([180, 0, 0]) machine_screw6(25);
                 }
                 translate(screw3_pos) {
-                    hex_nut6(tol = .1, solid=true);
+                    #hex_nut6(tol = .1, solid=true);
                     translate([0, 0, 25]) rotate([180, 0, 0]) machine_screw6(25);
                 }
             }
         }
+    }
+}
+
+
+module case_spacers () {
+    color("Blue", 1) {
+        translate(screw1_pos) spacer_tube();
+        translate(screw2_pos) spacer_tube();
+        translate(screw3_pos) spacer_tube();
     }
 }
 
