@@ -6,6 +6,7 @@ use <fillets.scad>
 use <GearSet_10to1.scad>
 use <No6_Hardware.scad>
 
+IN_TO_MM = 25.4;
 $fn = 24;
 
 // Each gear's pitch diameter
@@ -19,8 +20,11 @@ gear_slop = .5;
 // Clearence around the gears for the case
 case_clearence = 4;
 
+// increase sizes around hardware for printing inaccuracies
+tolerance = 0.1;
+
 // Diameter of the 1/8" shaft hardware
-shaft_dia = 3.175;
+shaft_dia = (1/8 * IN_TO_MM) + tolerance;
 
 // Display Transparency (alpha)
 alpha = 1;
@@ -31,18 +35,22 @@ screw2_pos = [(gear9_dia+gear30_dia)/4-2.5, -(gear27_dia+gear30_dia)/4-2.05, 0];
 screw3_pos = [-(gear9_dia+gear27_dia)/4+1.7, (gear9_dia+gear27_dia+gear27_dia)/4, 0];
 
 // Each Gear's position, this defines the basic case size 
-input_gear_pos = [gear_slop+(gear30_dia+gear9_dia)/2, 0, 0];
 mid_gear_pos = [0, 0, 0,];
-drive_gear_pos = [0, gear_slop+(gear27_dia+gear9_dia)/2, 0];
+input_gear_pos = [gear_slop + (gear30_dia+gear9_dia)/2, 0, 0];
+drive_gear_pos = [0, gear_slop + (gear27_dia+gear9_dia)/2, 0];
 
 // View the complete assembly (don't print this)
 rotate([90, 0, -90]) assembly_drawing();
+
+// Prints the test block / bending jig
+translate([50, -50, 0]) test_block_stl();
 
 // Working view of case bottom
 //rotate([180, 0, 0]) case_bottom_stl();
 
 // Working view of case top
 //rotate([0, 0, 0]) case_top_stl();
+
 
 // Winder Assembly Drawing
 module assembly_drawing() {
@@ -62,6 +70,33 @@ module assembly_drawing() {
             //case_shell();
         }
         //place_shafts();
+    }
+}
+
+
+
+// prints a 50x30x25 mm block with a few holes to 
+// determine if any extra tolerance in needed. Also
+// can be used as a bending jig for the winder hook
+module test_block_stl() {
+    difference () {
+        union () {
+            cube([50, 30, 25]);
+            translate([12, 15, 25]) cylinder(h=8, r1=12, r2=12);
+        }
+        // screw hole
+        #translate([40, -.05, 12.5]) 
+            rotate([-90, 0, 0]) screw_and_nut(30.1, tol = tolerance);
+        
+        // centered pin
+        #translate([24+1.5*shaft_dia, 15, 0]) 
+            cylinder(h=33, r1=shaft_dia/2, r2=shaft_dia/2, $fn=24);
+        // offset pin
+        #translate([24+1.5*shaft_dia, 24, 0]) 
+            cylinder(h=33, r1=shaft_dia/2, r2=shaft_dia/2, $fn=24);
+        
+        // vertical slot
+        #translate([24,14.5,0]) cube([27, 1, 33]);
     }
 }
 
@@ -113,8 +148,8 @@ module crank_arm_stl() {
                             import("MaxLogo.dxf");
         }
         crankshaft_core();
-        translate([-75, 0, -23]) machine_screw6(33, tol=0.1);
-        #translate([-75, 0, 7.25]) hex_nut6(tol=0.1);
+        translate([-75, 0, -23]) machine_screw6(33, tol=tolerance);
+        #translate([-75, 0, 7.25]) hex_nut6(tol=tolerance);
     }
 }
 
@@ -166,9 +201,9 @@ module case_top_stl() {
             
             // Screw positions
             #translate([0, 0, 5]) {
-                translate(screw1_pos) rotate([180, 0, 0]) machine_screw6(21, tol=.1);
-                translate(screw2_pos) rotate([180, 0, 0]) machine_screw6(21, tol=.1);
-                translate(screw3_pos) rotate([180, 0, 0]) machine_screw6(21, tol=.1);
+                translate(screw1_pos) rotate([180, 0, 0]) machine_screw6(21, tol=tolerance);
+                translate(screw2_pos) rotate([180, 0, 0]) machine_screw6(21, tol=tolerance);
+                translate(screw3_pos) rotate([180, 0, 0]) machine_screw6(21, tol=tolerance);
             }    
         }
     }
@@ -308,6 +343,7 @@ module input_gear_stl() {
         }
     }
 }
+
 
 module drive_gear_stl() {
     color("Sienna", alpha) {
