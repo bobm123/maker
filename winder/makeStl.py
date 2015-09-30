@@ -23,13 +23,17 @@ def gen_stl_files(project, parts_list, scad_path):
         cmd = '"%s" -o %s.stl __%s.scad' % (scad_path, part_name, part_name)
         print(cmd)
         call(cmd)
-            
+
+        
 def main(argv, argc):
     '''
-    Generates .stl files from 'parts' (modules with names ending in _stl) found in a .scad file
+    Generates .stl files from 'parts' (modules with names 
+    ending in _stl) found in a .scad file.
     '''
     if argc < 1:
-        print("generates .stl files from module named <somename>_stl()\nusage: myproject.scad")
+        print("generates .stl files from 'parts' (modules with names")
+        print("ending in _stl) found in a .scad file")
+        print("usage:\n\tpython makeStl.py myproject.scad [path to openSCAD]")
         exit(0)
         
     argv.append('')    
