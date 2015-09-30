@@ -112,7 +112,7 @@ module crankshaft_core() {
 }
 
 
- module drive_pin_stl() {
+module drive_pin_stl() {
     rotate([0, 0, 45])
         difference() {
             rotate([0,0,-45])
@@ -121,7 +121,10 @@ module crankshaft_core() {
             linear_extrude(30)
                 translate([8,0,0])
                     square([8,14], center=true);
+            #translate([0, 0, -5])
+                cylinder(20, shaft_dia/2, shaft_dia/2);
         }
+
 }
 
 

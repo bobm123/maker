@@ -39,6 +39,7 @@ def main(argv, argc):
     argv.append('')    
     scad_path = os.path.join(argv[2], 'openscad')
     parts_list = find_parts(argv[1])
+    print(parts_list)
     gen_stl_files(argv[1], parts_list, scad_path)
 
     
