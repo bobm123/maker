@@ -74,29 +74,30 @@ module assembly_drawing() {
 }
 
 
-
-// prints a 50x30x25 mm block with a few holes to 
+// prints a 48x24x24 mm block with a few holes to 
 // determine if any extra tolerance in needed. Also
 // can be used as a bending jig for the winder hook
 module test_block_stl() {
     difference () {
         union () {
-            cube([50, 30, 25]);
-            translate([12, 15, 25]) cylinder(h=8, r1=12, r2=12);
+            cube([48, 24, 24]);
+            translate([12, 12, 24]) cylinder(h=6, r1=12, r2=12);
         }
+        
         // screw hole
-        #translate([40, -.05, 12.5]) 
-            rotate([-90, 0, 0]) screw_and_nut(30.1, tol = tolerance);
+        #translate([40, -.05, 12]) 
+            rotate([-90, 0, 0]) screw_and_nut(24.1, tol = tolerance);
         
         // centered pin
-        #translate([24+1.5*shaft_dia, 15, 0]) 
-            cylinder(h=33, r1=shaft_dia/2, r2=shaft_dia/2, $fn=24);
+        #translate([24+1.5*shaft_dia, 12, 0]) 
+            cylinder(h=30, r1=shaft_dia/2, r2=shaft_dia/2, $fn=24);
+        
         // offset pin
-        #translate([24+1.5*shaft_dia, 24, 0]) 
-            cylinder(h=33, r1=shaft_dia/2, r2=shaft_dia/2, $fn=24);
+        #translate([34, 19, 0]) 
+            cylinder(h=30, r1=shaft_dia/2, r2=shaft_dia/2, $fn=24);
         
         // vertical slot
-        #translate([24,14.5,0]) cube([27, 1, 33]);
+        #translate([28,11.5,0]) cube([20, 1, 30]);
     }
 }
 
