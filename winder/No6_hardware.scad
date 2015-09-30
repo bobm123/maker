@@ -15,9 +15,9 @@ head_dia6    = IN_TO_MM * 0.262;
 
 
 module screw_and_nut(length, tol=0.0) {
-    translate ([0, 0, length-nut6_thickness]) 
-        hex_nut6(tol=0.0, solid=false);
-    machine_screw6(length, tol=0.0);
+    translate ([0, 0, length-(nut6_thickness+tol)]) 
+        hex_nut6(tol=tol, solid=false);
+    machine_screw6(length, tol=tol);
 }
 
     
