@@ -43,7 +43,7 @@ drive_gear_pos = [0, gear_slop + (gear27_dia+gear9_dia)/2, 0];
 rotate([90, 0, -90]) assembly_drawing();
 
 // Prints the test block / bending jig
-translate([50, -50, 0]) test_block_stl();
+//translate([50, -50, 0]) test_block_stl();
 
 // Working view of case bottom
 //rotate([180, 0, 0]) case_bottom_stl();
@@ -51,25 +51,21 @@ translate([50, -50, 0]) test_block_stl();
 // Working view of case top
 //rotate([0, 0, 0]) case_top_stl();
 
+// Re-oriented drive pin for printing
+//rotate([90, 135, 0]) drive_pin_stl();
+
 
 // Winder Assembly Drawing
 module assembly_drawing() {
-    difference () {
-        union() {
-            translate([0, 0, 14]) case_top_stl();
-            translate([0, 0, 1]) drive_train();
-            translate([0, 0, -3]) case_bottom_stl();
-            translate([0, 0, -4]) case_spacers();
-            translate(input_gear_pos) {
-                translate([0, 0, -24]) crank_arm_stl();
-                translate([-75, 0, -29.5]) crank_knob_stl();
-                translate([-75, 0, -47]) crank_pin_stl();            
-                translate([0, 0, -24]) drive_pin_stl(); 
-            }
-            // for debug reference
-            //case_shell();
-        }
-        //place_shafts();
+    translate([0, 0, 14]) case_top_stl();
+    translate([0, 0, 1]) drive_train();
+    translate([0, 0, -3]) case_bottom_stl();
+    translate([0, 0, -4]) case_spacers();
+    translate(input_gear_pos) {
+        translate([0, 0, -24]) crank_arm_stl();
+        translate([-75, 0, -29.5]) crank_knob_stl();
+        translate([-75, 0, -47]) crank_pin_stl();
+        translate([0, 0, -24]) drive_pin_stl(); 
     }
 }
 
@@ -121,8 +117,8 @@ module drive_pin_stl() {
             linear_extrude(30)
                 translate([8,0,0])
                     square([8,14], center=true);
-            #translate([0, 0, -5])
-                cylinder(20, shaft_dia/2, shaft_dia/2);
+            #translate([0, 0, 18])
+                cylinder(25, shaft_dia/2, shaft_dia/2);
         }
 
 }
