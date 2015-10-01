@@ -54,6 +54,9 @@ rotate([90, 0, -90]) assembly_drawing();
 // Re-oriented drive pin for printing
 //rotate([90, 135, 0]) drive_pin_stl();
 
+// Some work on the cank knob assembly..
+//rotate([180, 0, 0]) crank_knob_stl();
+//translate([0, 0, 20]) rotate([180, 0, 0]) crank_pin_stl();
 
 // Winder Assembly Drawing
 module assembly_drawing() {
@@ -155,30 +158,44 @@ module crank_arm_stl() {
 
 
 module crank_knob_stl() {
-    rotate([180, 0, 90])
-        difference () {
-            minkowski() {
-                linear_extrude (16)
-                    intersection() {
-                        square ([12,6], center=true);
-                        circle(6);
+    translate([0, 0, -2]) {
+        rotate([180, 0, 90]) {
+            difference () {
+                union () {
+                    minkowski() {
+                        linear_extrude (24)
+                            intersection() {
+                                square ([26,12], center=true);
+                                circle(13);
+                            }
+                        sphere(1);
                     }
-                sphere(2);
+                    translate([0, 0, -4]) cylinder(4, 7, 7);
+                }
+                translate([-20, 45.5, 12]) 
+                    rotate([0, 90, 0]) cylinder(40, 40, 40, $fn = 96);
+                translate([-20, -45.5, 12]) 
+                    rotate([0, 90, 0]) cylinder(40, 40, 40, $fn = 96);
+                translate([0, 0, 12]) cylinder(14, 5, 5);
+                translate([0, 0, -6]) cylinder(32, 3.25, 3.25);
+                //translate([-10, 0, 0]) cube([20,10,40]);
             }
-            translate([0, 0, 12]) cylinder(6, 3.5, 3.5);
-            translate([0, 0, -2]) cylinder(20, 2.1, 2.1);
+            translate([-4.5, -.5, 12]) cube([9, 1, 13]);
+            translate([-.5, -4.5, 12]) cube([1, 9, 13]);
         }
+    }
 }
 
 
 module crank_pin_stl()
 {
+    translate([0, 0, 1]) 
     difference () {
         union() {
-            translate([0, 0, 0]) cylinder(4, 3, 3);
-            translate([0, 0, 0]) cylinder(20, 2, 2);
+            cylinder(4, 4.5, 4.5);
+            cylinder(21, 2.75, 2.75);
         }
-        #machine_screw6(33);
+        machine_screw6(33);
     }
 }
 
