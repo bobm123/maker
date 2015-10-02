@@ -40,7 +40,7 @@ input_gear_pos = [gear_slop + (gear30_dia+gear9_dia)/2, 0, 0];
 drive_gear_pos = [0, gear_slop + (gear27_dia+gear9_dia)/2, 0];
 
 // View the complete assembly (don't print this)
-rotate([90, 0, -90]) assembly_drawing();
+//rotate([90, 0, -90]) assembly_drawing();
 
 // Prints the test block / bending jig
 //translate([50, -50, 0]) test_block_stl();
@@ -56,7 +56,8 @@ rotate([90, 0, -90]) assembly_drawing();
 
 // Some work on the cank knob assembly..
 //rotate([180, 0, 0]) crank_knob_stl();
-//translate([0, 0, 20]) rotate([180, 0, 0]) crank_pin_stl();
+//translate([0, 0, 18]) rotate([180, 0, 0]) crank_pin_stl();
+crank_arm_stl();
 
 // Winder Assembly Drawing
 module assembly_drawing() {
@@ -131,7 +132,7 @@ module crank_arm_stl() {
     difference () {
         union() {
             minkowski() {
-               linear_extrude (8) {
+               linear_extrude (6) {
                     circle(8);
                     translate([-75, 0, 0]) circle(8);
                     translate([-75, -5, 0]) square([75,10]);
@@ -152,7 +153,7 @@ module crank_arm_stl() {
         }
         crankshaft_core();
         translate([-75, 0, -23]) machine_screw6(33, tol=tolerance);
-        #translate([-75, 0, 7.25]) hex_nut6(tol=tolerance);
+        #translate([-75, 0, 5.25]) hex_nut6(tol=tolerance);
     }
 }
 
@@ -163,7 +164,7 @@ module crank_knob_stl() {
             difference () {
                 union () {
                     minkowski() {
-                        linear_extrude (24)
+                        linear_extrude (20)
                             intersection() {
                                 square ([26,12], center=true);
                                 circle(13);
@@ -172,16 +173,25 @@ module crank_knob_stl() {
                     }
                     translate([0, 0, -4]) cylinder(4, 7, 7);
                 }
-                translate([-20, 45.5, 12]) 
+                translate([-20, 45.75, 10]) 
                     rotate([0, 90, 0]) cylinder(40, 40, 40, $fn = 96);
-                translate([-20, -45.5, 12]) 
+                translate([-20, -45.75, 10]) 
                     rotate([0, 90, 0]) cylinder(40, 40, 40, $fn = 96);
-                translate([0, 0, 12]) cylinder(14, 5, 5);
-                translate([0, 0, -6]) cylinder(32, 3.25, 3.25);
-                //translate([-10, 0, 0]) cube([20,10,40]);
+                translate([0, 0, 10]) cylinder(14, 5, 5);
+                translate([0, 0, -6]) cylinder(32, 3.5, 3.5);
+                //translate([-10, 0, 0]) cube([20,10,30]);
             }
-            translate([-4.5, -.5, 12]) cube([9, 1, 13]);
-            translate([-.5, -4.5, 12]) cube([1, 9, 13]);
+            //Inside supports
+            //translate([-4.5, -.5, 12]) cube([9, 1, 13]);
+            //translate([-.5, -4.5, 12]) cube([1, 9, 13]);
+            //Outside supports
+            translate([6, -5, -4]) cube([6, 1, 3]);
+            translate([7.5, -.5, -4]) cube([5, 1, 3]);
+            translate([6, 4, -4]) cube([6, 1, 3]);
+            
+            translate([-12, -5, -4]) cube([6, 1, 3]);
+            translate([-12.5, -.5, -4]) cube([5, 1, 3]);
+            translate([-12, 4, -4]) cube([6, 1, 3]);
         }
     }
 }
@@ -189,13 +199,13 @@ module crank_knob_stl() {
 
 module crank_pin_stl()
 {
-    translate([0, 0, 1]) 
+    translate([0, 0, 2]) 
     difference () {
         union() {
-            cylinder(4, 4.5, 4.5);
-            cylinder(21, 2.75, 2.75);
+            cylinder(3, 4.5, 4.5);
+            cylinder(20, 3, 3);
         }
-        machine_screw6(33);
+        machine_screw6(33, tol=tolerance);
     }
 }
 
