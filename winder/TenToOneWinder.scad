@@ -40,7 +40,7 @@ input_gear_pos = [gear_slop + (gear30_dia+gear9_dia)/2, 0, 0];
 drive_gear_pos = [0, gear_slop + (gear27_dia+gear9_dia)/2, 0];
 
 // View the complete assembly (don't print this)
-//rotate([90, 0, -90]) assembly_drawing();
+rotate([90, 0, -90]) assembly_drawing();
 
 // Prints the test block / bending jig
 //translate([50, -50, 0]) test_block_stl();
@@ -57,7 +57,7 @@ drive_gear_pos = [0, gear_slop + (gear27_dia+gear9_dia)/2, 0];
 // Some work on the cank knob assembly..
 //rotate([180, 0, 0]) crank_knob_stl();
 //translate([0, 0, 18]) rotate([180, 0, 0]) crank_pin_stl();
-crank_arm_stl();
+//crank_arm_stl();
 
 // Winder Assembly Drawing
 module assembly_drawing() {
@@ -66,9 +66,9 @@ module assembly_drawing() {
     translate([0, 0, -3]) case_bottom_stl();
     translate([0, 0, -4]) case_spacers();
     translate(input_gear_pos) {
-        translate([0, 0, -24]) crank_arm_stl();
+        translate([0, 0, -23]) crank_arm_stl();
         translate([-75, 0, -29.5]) crank_knob_stl();
-        translate([-75, 0, -47]) crank_pin_stl();
+        translate([-75, 0, -48]) crank_pin_stl();
         translate([0, 0, -24]) drive_pin_stl(); 
     }
 }
