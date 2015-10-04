@@ -61,14 +61,14 @@ rotate([90, 0, -90]) assembly_drawing();
 
 // Winder Assembly Drawing
 module assembly_drawing() {
-    translate([0, 0, 14]) case_top_stl();
+    //translate([0, 0, 14]) case_top_stl();
     translate([0, 0, 1]) drive_train();
-    translate([0, 0, -3]) case_bottom_stl();
-    translate([0, 0, -4]) case_spacers();
+    //translate([0, 0, -3]) case_bottom_stl();
+    //translate([0, 0, -4]) case_spacers();
     translate(input_gear_pos) {
-        translate([0, 0, -23]) crank_arm_stl();
+        translate([0, 0, -24]) crank_arm_stl();
         translate([-75, 0, -29.5]) crank_knob_stl();
-        translate([-75, 0, -48]) crank_pin_stl();
+        //translate([-75, 0, -48]) crank_pin_stl();
         translate([0, 0, -24]) drive_pin_stl(); 
     }
 }
@@ -102,12 +102,12 @@ module test_block_stl() {
 }
 
 
-module crankshaft_core() {
+module crankshaft_core(tol = 0.0) {
     translate([0, 0, -3.1])
         linear_extrude (40.1)
-            rotate([0, 0, 45]) square(8, center=true);
+            rotate([0, 0, 45]) square(8+tol, center=true);
     translate([0, 0, 10])
-        cylinder(14, 8*sqrt(2)/2, 8);
+        cylinder(14, 8*sqrt(2)/2+tol, 8+tol);
     
 }
 
@@ -151,7 +151,7 @@ module crank_arm_stl() {
                         rotate([0,180,0])
                             import("MaxLogo.dxf");
         }
-        crankshaft_core();
+        crankshaft_core(tol=tolerance);
         translate([-75, 0, -23]) machine_screw6(33, tol=tolerance);
         #translate([-75, 0, 5.25]) hex_nut6(tol=tolerance);
     }
@@ -250,7 +250,7 @@ module case_bottom_stl() {
             }
             translate([0, 0, -21])
                 translate(input_gear_pos)
-                    crankshaft_core();
+                    crankshaft_core(tol=tolerance);
             
             // Gear Axels
             translate([0, 0, -7.5]) {
@@ -333,9 +333,9 @@ module place_shafts() {
 
 module drive_train()
 {
-    rotate([0, 0, 60]) mid_gear_stl();
+    //rotate([0, 0, 60]) mid_gear_stl();
     translate(input_gear_pos) rotate([0, 0, 90]) input_gear_stl();
-    translate(drive_gear_pos)  drive_gear_stl();
+    //translate(drive_gear_pos)  drive_gear_stl();
 }
 
 
@@ -364,7 +364,7 @@ module input_gear_stl() {
                     cylinder(7, 15/2, 15/2);
             }
             translate([0,0,-25])
-                crankshaft_core();
+                crankshaft_core(tol=tolerance);
             translate([15,0,8.25])
                 cube(4.75, center=true);    
         }
