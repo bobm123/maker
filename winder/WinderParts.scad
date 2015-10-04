@@ -15,6 +15,6 @@ use <TenToOneWinder.scad>
 //rotate([180, 0 , 0]) case_bottom_stl();
 //spacer_tube_stl();
 
-rotate([180, 0 , 0]) crank_arm_stl();
+//rotate([180, 0 , 0]) crank_arm_stl();
 //rotate([180, 0, 0]) crank_knob_stl();
 //crank_pin_stl();

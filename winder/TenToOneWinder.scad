@@ -61,14 +61,14 @@ rotate([90, 0, -90]) assembly_drawing();
 
 // Winder Assembly Drawing
 module assembly_drawing() {
-    //translate([0, 0, 14]) case_top_stl();
-    translate([0, 0, 1]) drive_train();
-    //translate([0, 0, -3]) case_bottom_stl();
-    //translate([0, 0, -4]) case_spacers();
+    translate([0, 0, 14]) case_top_stl();
+    translate([0, 0, .5]) drive_train();
+    translate([0, 0, -3]) case_bottom_stl();
+    translate([0, 0, -4]) case_spacers();
     translate(input_gear_pos) {
         translate([0, 0, -24]) crank_arm_stl();
         translate([-75, 0, -29.5]) crank_knob_stl();
-        //translate([-75, 0, -48]) crank_pin_stl();
+        translate([-75, 0, -48]) crank_pin_stl();
         translate([0, 0, -24]) drive_pin_stl(); 
     }
 }
@@ -333,9 +333,9 @@ module place_shafts() {
 
 module drive_train()
 {
-    //rotate([0, 0, 60]) mid_gear_stl();
+    rotate([0, 0, 60]) mid_gear_stl();
     translate(input_gear_pos) rotate([0, 0, 90]) input_gear_stl();
-    //translate(drive_gear_pos)  drive_gear_stl();
+    translate(drive_gear_pos)  drive_gear_stl();
 }
 
 
@@ -346,8 +346,8 @@ module mid_gear_stl() {
                 linear_extrude(5) gear27();
                 translate([0,0,5]) linear_extrude(7) gear9();
             }
-            #translate([0,0,-1])
-                cylinder(14, shaft_dia/2, shaft_dia/2);
+            #translate([0,0,-6])
+                cylinder(25, shaft_dia/2, shaft_dia/2);
         }
     }
 }
@@ -379,14 +379,14 @@ module drive_gear_stl() {
                 linear_extrude(6)
                     gear9();
                 translate([0,0,6])
-                    cylinder(6, 17.51/2, 17.51/2);
+                    cylinder(7, 17.51/2, 17.51/2);
             }
-            #translate([0,0,-1])
-                cylinder(14, shaft_dia/2, shaft_dia/2);
-            translate([0, shaft_dia/2, 9])
+            #translate([0,0,-6])
+                cylinder(45, shaft_dia/2, shaft_dia/2);
+            #translate([0, shaft_dia/2, 8])
                 rotate([-90, 180, 0]){
-                    machine_screw6(10);
-                    hex_nut6_slot(10);
+                    machine_screw6(7.5);
+                    hex_nut6_slot(5);
                 }
                 
         }
