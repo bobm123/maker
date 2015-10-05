@@ -12,7 +12,7 @@ use <TenToOneWinder.scad>
 //rotate([0, 90, 0]) rotate([0, 0, -45]) drive_pin_stl();
 
 //case_top_stl();
-//rotate([180, 0 , 0]) case_bottom_stl();
+rotate([180, 0 , 0]) case_bottom_stl();
 //spacer_tube_stl();
 
 //rotate([180, 0 , 0]) crank_arm_stl();
