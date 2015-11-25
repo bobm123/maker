@@ -22,7 +22,7 @@ function offsets(c, d, seed=42) = [
     rands(0, d, 3, seed+i)
 ];
 
-function random_points(n, m, h, s, d) = grid(n, m, h, s, d) + offsets(n*m*h, d);
+function random_points(n, m, h, s, d, seed=42) = grid(n, m, h, s, d) + offsets(n*m*h, d);
 /* debug point generator
 points=random_points(3, 3, 3, 20, 5);
 echo(points);
@@ -33,9 +33,10 @@ for (p=points) {
 
 //random_voronoi3d(L=150, thickness=6, round=6, seed=55);
 //voronoi_sphere();
+//voronoi3d(random_points(3, 3, 3, 18, 7, seed=6), L=50, thickness=1, round=1);
 difference () {
-  cube([50, 50, 80]);
-  voronoi3d(random_points(3, 3, 5, 18, 7), L=50, thickness=1, round=1);
+  cube([50, 50, 50]);
+  voronoi3d(random_points(3, 3, 3, 18, 7), L=50, thickness=1, round=1);
 }
 function normalize(v) = v/(distance(v));
 function distance(v) = sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
@@ -54,7 +55,7 @@ module voronoi_sphere(nuclei=true, thickness=4, round=4, nuclei=true) {
   }
   if(nuclei) {
     for (p=point_set) {
-      translate(p) sphere(r=6, $fn=20);
+      translate(p) sphere(r=6);
     }
   }
 }
@@ -69,7 +70,7 @@ module random_voronoi3d(n=25, L=100, thickness=6, round=6, min=-100, max=100, se
 
 module voronoi3d(points, L=50, thickness=6, round=6){
   for (p=points) {
-    color(rands(0,1,3), .75) 
+    color(rands(0,1,3), .75)
     minkowski() {
       intersection_for(p1=points){
         if (p!=p1) {
@@ -82,7 +83,7 @@ module voronoi3d(points, L=50, thickness=6, round=6){
           }
         }
       }
-      sphere(r=round, $fn=20);
+      sphere(r=round);
     }
   }
 }
