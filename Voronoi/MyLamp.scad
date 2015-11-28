@@ -31,7 +31,7 @@ function random_points(n, m, h, s, d, seed) = grid(n, m, h, s, d) + offsets(n*m*
 // Orient the model for printing
 //////////////////////////////////////////////////
 translate([0, 50, 75]) rotate([180, 0, 0]) {
-  lamp(t=2, w=50, h=75, wi=24, hi=55);
+  lamp(t=2, w=50, h=75, wi=20, hi=55);
 }
 //////////////////////////////////////////////////
 
@@ -39,25 +39,15 @@ translate([0, 50, 75]) rotate([180, 0, 0]) {
 //////////////////////////////////////////////////
 // Generate the lamp
 //////////////////////////////////////////////////
-module lamp(t=2, w=50, h=65, wi=20, hi=55) {
+module lamp(t=2, w=50, h=65, wi=17, hi=55) {
   frame(t, w, h, wi, hi);
   difference () {
     cube([w, w, h]);
     translate([4.5, 4.5, 0]) voronoi3d(random_points(3, 3, 5, 16, 9, seed=15), L=50, thickness=.5, round=.5);
     interior(w, h, wi, hi, solid=true);
-/*  
-    #translate([1+(w-wi)/2, 1+(w-wi)/2, h-hi]) cube([wi-2, wi-2, hi]);
-    #translate([w/2, w/2, 21]) rotate([0, 180, 45]) cylinder(h=10, r1=12*1.41, r2=3, $fn=4);
-*/
   }
-  translate([w/2, w/2, 20]) rotate([0, 180, 45]) difference() {
-    cylinder(h=10, r1=12*1.41, r2=3, $fn=4);
-    cylinder(h=9, r1=11*1.41, r2=2, $fn=4);
-  }
-  difference() {
-    translate([(w-wi)/2, (w-wi)/2, h-hi]) cube([wi, wi, hi]);
-    translate([1+(w-wi)/2, 1+(w-wi)/2, h-hi]) cube([wi-2, wi-2, hi+5]);
-  }
+  interior(w, h, wi, hi, solid=false);
+
   // Add thin walls for support
   color("Yellow", .55) {
     translate([0, .75, 0]) cube([50, .5, 75]);
@@ -78,12 +68,12 @@ module interior(w=50, h=65, wi=20, hi=55, solid=false) {
     union () {
       translate([(w-wi)/2, (w-wi)/2, h-hi]) cube([wi, wi, hi]);
       translate([w/2, w/2, 20]) rotate([0, 180, 45]) 
-        cylinder(h=10, r1=12*1.41, r2=3, $fn=4);
+        cylinder(h=10, r1=wi*.707, r2=3, $fn=4);
     }
     if (!solid) {
       translate([1+(w-wi)/2, 1+(w-wi)/2, h-hi]) cube([wi-2, wi-2, hi]);
-      translate([w/2, w/2, 21]) rotate([0, 180, 45]) 
-        cylinder(h=10, r1=12*1.41, r2=3, $fn=4);
+      translate([w/2, w/2, 20.1]) rotate([0, 180, 45])
+        cylinder(h=9, r1=(wi-1)*.707, r2=2, $fn=4);
     }
   }
 }
