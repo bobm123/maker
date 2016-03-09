@@ -1,8 +1,8 @@
-use <whistle.scad>
+use <whistle_hex.scad>
 
-O_length = 75;
-O_width = 45;
-O_height = 22;
+O_length = 66;
+O_width = 38;
+O_height = 24;
 
 // Finger hole locations
 fingers = [
@@ -19,14 +19,14 @@ fingers = [
 
 // Thumb holess
 thumbs = [
-    [35, 13, 0],
-    [35, O_width-13, 0],
+    [30, 13, 0],
+    [40, O_width-13, 0],
 ];
 
 
 // Basic model
-//ocarina(O_length, O_width, O_height);
-whistle(40, 30, 22);
+ocarina(O_length, O_width, O_height);
+//whistle(40, 30, 22);
 
 //debug
 //difference()
@@ -91,7 +91,7 @@ module top_holes(positions, radius, thickness, bring=false) {
             }
         }
         for(p=positions) {
-            #cutout(p, thickness, radius);
+            cutout(p, thickness, radius);
         }
     }    
 }
@@ -102,10 +102,10 @@ module cutout(p, t, r, top=true)
 {
     $fn = 48;
     if(top) {
-        #translate([0,0,-.6])
+        translate([0,0,-.6])
         translate (p) {
             cylinder(t-.5, r+t*.5, r);
-            cylinder(t+1, .25, .25);
+            cylinder(t+1, .5, .5);
         }
     }
     else {
@@ -113,7 +113,7 @@ module cutout(p, t, r, top=true)
         translate (p) {
         rotate([180, 0, 0]) {
             cylinder(t-.5, r+t*.5, r);
-            cylinder(t+1, .25, .25);
+            cylinder(t+1, .5, .5);
             }
         }        
     }
