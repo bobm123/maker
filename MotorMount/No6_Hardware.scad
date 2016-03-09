@@ -41,6 +41,8 @@ module machine_screw6(length, tol=0)
             cylinder(length-tol, tol+diameter6/2, tol+diameter6/2, $fn=24);
         }
         cylinder(tol+.01, tol+head_dia6/2, tol+head_dia6/2, $fn=24);
+        //translate([0,0,-3])
+        //    cylinder(3, tol+head_dia6/2, tol+head_dia6/2, $fn=24);
     }
 }
 
