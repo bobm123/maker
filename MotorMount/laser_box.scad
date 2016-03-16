@@ -1,88 +1,102 @@
-SPACER = 2;
+/*!
+ * laser_box.scad <https://github.com/bobm123/maker>
+ *
+ * Copyright (c) 2016 Robert Marchese.
+ * Licensed under the MIT license.
+ *
+ * OpenSCAD modules to generate a parts for a laser cut
+ * box given the outside dimentsion, number of fingers
+ * for the box joints and thickness of the material
+ *
+ */
+
+KERF = .1;
+SPACER = 2+KERF;
 
 
-laser_box(50, 30, 20, 5, 25.4*(1/16));
+// Example of 50mm x 30mm x 1", made from 1/16" thick matertial
+laser_box(50, 30, 25.4*1, 11, 25.4*(1/16));
 
-//box_joint(50, 5, 2, true);
-//translate([0, 5]) box_joint(50, 5, 2, false);
 
 module laser_box(length, width, height, fingers, material)
 {
+    finger_width = height / fingers;
     translate([0, 0, 0])
-        bottom(length, width, fingers, material);
+        bottom(length, width, fingers, KERF, material);
+
     translate([length+SPACER, 0, 0]) 
-        side1(height, width, fingers, material);
-    translate([length+SPACER+height+SPACER, 0, 0])
-        side2(length, height, fingers, material);
+        side1(width, height, fingers, KERF, material);
+    translate([length+SPACER+width+SPACER, 0, 0])
+        side2(length, height, fingers, KERF, material);
+
 }
 
-module bottom(length, width, fingers, material) {
-    difference () {
-        square([length, width]);
-        box_joint(length, fingers, material, false);
-        translate([0, width-material])
-            box_joint(length, fingers, material, false);
-        rotate([0, 0, 90]) {
-            translate([0, -material])
-                box_joint(width, fingers, material, true);
-            translate([0, -length])
-                box_joint(width, fingers, material, true);
-        }
-    }
-}
 
-module side1(height, width, fingers, material) {
-    difference () {
-        square([height, width]);
-        box_joint(height, fingers, material, true);
-        translate([0, width-material])
-            box_joint(height, fingers, material, true);
-        rotate([0, 0, 90]) {
-            translate([0, -material])
-                box_joint(width, fingers, material, false);
-            translate([0, -height])
-                box_joint(width, fingers, material, false);
-        }
-    }  
-}
-
-module side2(length, width, fingers, material) {
-    difference () {
-        square([length, width]);
-        box_joint(length, fingers, material, true);
-        translate([0, width-material])
-            box_joint(length, fingers, material, true);
-        rotate([0, 0, 90]) {
-            translate([0, -material])
-                box_joint(width, fingers, material, false);
-            translate([0, -length])
-                box_joint(width, fingers, material, false);
-        }
-    }
-}
-module box_joint(jlen, flen, thick, show_a)
+module box_joint(jlen, fcount, thick, kerf, show_a)
 {
+    flen = jlen / fcount;
     if (show_a) {
-        union() {
-            //square([jlen, thick]);
-            side_a(jlen, flen, thick);
-        }
+        side_a(jlen, flen, thick, kerf, (1+fcount)%2);
     }
     else {
-        difference() {
-            square([jlen, thick]);
-            side_a(jlen, flen, thick);
+        side_b(jlen, flen, thick, kerf, fcount%2);
+    }
+}
+
+
+module side_a(jlen, flen, thick, kerf, even=1)
+{
+    os_initial = 0;
+    intersection() {
+        square([jlen+kerf, thick]);
+        for (n = [0:1:(jlen)/(2*flen)-even]) {
+            os = os_initial + n*2*flen;
+            translate([os, 0]) 
+                square([flen+kerf, thick]);
         }
     }
 }
 
-module side_a(jlen, flen, thick)
+
+module side_b(jlen, flen, thick, kerf, odd=1)
 {
-    //start_offset = (jlen - floor(jlen / flen) * flen)/2;
-    start_offset = flen*1.5;
-    for (n = [0:1: (jlen-start_offset)/(2*flen)-1]) {
-        os = start_offset +n*2*flen;
-        translate([os, 0]) 
-            square([flen, thick]);
+    os_initial = flen;
+    intersection() {
+        square([jlen+kerf, thick]);
+        for (n = [0:1:(jlen)/(2*flen)-odd]) {
+            os = os_initial + n*2*flen;
+            translate([os, 0]) 
+                square([flen+kerf, thick]);
+        }
     }
+}
+
+
+module bottom(length, width, fingers, kerf, material) {
+    // flat bottom for now
+    square([length+kerf, width+kerf]);
+}
+
+
+module side1(width, height, fingers, kerf, material) {
+    translate([material, 0])
+        square([width-(2*material-kerf), height+kerf]);
+    translate([material, 0,])
+        rotate([0, 0, 90])
+            box_joint(height, fingers, material, kerf, true);
+    translate([width+kerf, 0])
+        rotate([0, 0, 90])
+            box_joint(height, fingers, material, kerf, true);
+}
+
+
+module side2(length, height, fingers, kerf, material) {
+    translate([material, 0])
+        square([length-(2*material-kerf), height+kerf]);
+    translate([material, 0,])
+        rotate([0, 0, 90])
+            box_joint(height, fingers, material, kerf, false);
+    translate([length+kerf, 0])
+        rotate([0, 0, 90])
+            box_joint(height, fingers, material, kerf, false);
 }
