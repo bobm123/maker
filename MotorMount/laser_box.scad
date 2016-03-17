@@ -35,6 +35,7 @@ module laser_box(length, width, height, fingers, material)
 module box_joint(jlen, fcount, thick, kerf, show_a)
 {
     flen = jlen / fcount;
+    rotate([0, 0, 90])
     if (show_a) {
         side_a(jlen, flen, thick, kerf, (1+fcount)%2);
     }
@@ -82,11 +83,9 @@ module side1(width, height, fingers, kerf, material) {
     translate([material, 0])
         square([width-(2*material-kerf), height+kerf]);
     translate([material, 0,])
-        rotate([0, 0, 90])
-            box_joint(height, fingers, material, kerf, true);
+        box_joint(height, fingers, material, kerf, true);
     translate([width+kerf, 0])
-        rotate([0, 0, 90])
-            box_joint(height, fingers, material, kerf, true);
+        box_joint(height, fingers, material, kerf, true);
 }
 
 
@@ -94,9 +93,7 @@ module side2(length, height, fingers, kerf, material) {
     translate([material, 0])
         square([length-(2*material-kerf), height+kerf]);
     translate([material, 0,])
-        rotate([0, 0, 90])
-            box_joint(height, fingers, material, kerf, false);
+        box_joint(height, fingers, material, kerf, false);
     translate([length+kerf, 0])
-        rotate([0, 0, 90])
-            box_joint(height, fingers, material, kerf, false);
+        box_joint(height, fingers, material, kerf, false);
 }
