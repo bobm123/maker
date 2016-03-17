@@ -1,10 +1,10 @@
-/*!
+/*
  * laser_box.scad <https://github.com/bobm123/maker>
  *
  * Copyright (c) 2016 Robert Marchese.
  * Licensed under the MIT license.
  *
- * OpenSCAD modules to generate a parts for a laser cut
+ * OpenSCAD modules to generate parts for a laser cut
  * box given the outside dimentsion, number of fingers
  * for the box joints and thickness of the material
  *
