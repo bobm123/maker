@@ -13,7 +13,8 @@ use <laser_box.scad>;
 KERF = .3;
 SPACER = 4+KERF;
 
-tilt_mount(27, 30, 26, 5, 25.4*(3/32));
+thickness = 25.4*(1/16);
+tilt_mount(27, 30, 26, 5, thickness);
 
 module tilt_mount(length, width, height, fingers, material)
 {
@@ -41,7 +42,7 @@ module tilt_mount(length, width, height, fingers, material)
         difference() {
             side2(width, height, fingers, KERF, material);
             translate([width/2, 1.5, 0])
-                #square([6,3], center=true);
+                square([6,3], center=true);
             translate([width/2, height/2, 0]) {
                 circle(r=3.5, center=true, $fn=48);
                 for (a=[45:90:360]) rotate([0, 0, a]) {
