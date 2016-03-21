@@ -55,3 +55,20 @@ module tilt_mount(length, width, height, fingers, material)
         }
     }
 }
+
+module side_plate(length, width, height, fingers, material)
+{
+    difference() {
+        translate([0, 0, 0]) {
+            side1(length, height, fingers, KERF, material);
+        }
+    polygon([[0,height-4],
+             [0,height+KERF],
+             [length/2, height+KERF]]);
+    polygon([[0,4],[0,0],[length-material, 0]]);
+        translate([2+length/4, height/2, 0])
+            circle(r=25.4*(1/32), center=true, $fn=48);
+        translate([2+length/2, height-3, 0])
+            circle(r=25.4*(1/64), center=true, $fn=48);  
+    }
+}
