@@ -10,12 +10,16 @@
  *
  */
 
-KERF = .1;
+KERF = .3;
 SPACER = 2+KERF;
 
 
 // Example of 50mm x 30mm x 1", made from 1/16" thick matertial
-laser_box(50, 30, 25.4*1, 11, 25.4*(1/16));
+//laser_box(50, 30, 25.4*1, 11, 25.4*(1/16));
+LENGTH = 25.4 * 8;
+WIDTH = 25.4 * 7;
+HEIGHT = 25.4 * 8;
+laser_box(LENGTH, WIDTH, HEIGHT, 25, 4);
 
 
 module laser_box(length, width, height, fingers, material)
