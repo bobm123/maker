@@ -376,18 +376,20 @@ module drive_gear_stl() {
     color("Sienna", alpha) {
         difference () {
             union() {
-                linear_extrude(6)
+                linear_extrude(7)
                     gear9();
-                translate([0,0,6])
-                    cylinder(7, 17.51/2, 17.51/2);
+                translate([0,0,7])
+                    cylinder(5.9, 17.51/2, 17.51/2);
             }
-            #translate([0,0,-6])
+            translate([0,0,-6])
                 cylinder(45, shaft_dia/2, shaft_dia/2);
-            #translate([0, shaft_dia/2, 8])
-                rotate([-90, 180, 0]){
-                    machine_screw6(7.5);
-                    hex_nut6_slot(5);
+            translate([0, shaft_dia/2, 10])
+                #rotate([-90, 180, 0]){
+                    translate([0,0,10.5]) rotate([180,0,0])  machine_screw6(12);
+                    //hex_nut6_slot(5);
                 }
+            translate([-6,0,11.5]) cylinder(2.5, 3.35/2, 3.25/2);
+            translate([ 6,0,11.5]) cylinder(2.5, 3.35/2, 3.25/2);
                 
         }
     }
