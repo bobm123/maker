@@ -6,9 +6,9 @@
 // 9 tooth. See TBD for description of method.
 
 
-gear30();
+gear30_profile();
 
-module gear9() {
+module gear9_profile() {
     // Import Gear Generated with 9 teeth. Use
     // reported overall diameter center on origin
     // Pitch Dia is 15mm
@@ -16,7 +16,7 @@ module gear9() {
         import("9Tooth.dxf");
 }
 
-module gear27() {
+module gear27_profile() {
     // Import Gear Generated with 27 teeth. Use
     // reported overall diameter center on origin
     // Pitch Dia is 45mm
@@ -25,7 +25,7 @@ module gear27() {
 }
 
 
-module gear30() {
+module gear30_profile() {
     // Import Gear Generated with 30 teeth. Use
     // reported overall diameter center on origin
     // Pitch Dia is 50mm

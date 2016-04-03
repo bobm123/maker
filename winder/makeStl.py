@@ -16,13 +16,17 @@ def find_parts(project):
 
     
 def gen_stl_files(project, parts_list, scad_path):
+    cmdList = []
     for part_name in parts_list:
         outfile = open("__%s.scad" % part_name, 'w')
         outfile.write("use <%s>\n%s_stl();\n" % (project, part_name))
         outfile.close()
-        cmd = '"%s" -o %s.stl __%s.scad' % (scad_path, part_name, part_name)
+        cmd = '%s -o %s.stl __%s.scad' % (scad_path, part_name, part_name)
         print(cmd)
-        call(cmd)
+        cmdList.append(cmd)
+
+    for cmd in cmdList:
+        call(cmd, shell=True)
 
         
 def main(argv, argc):

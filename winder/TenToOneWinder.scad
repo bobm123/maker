@@ -4,10 +4,11 @@
 
 use <fillets.scad>
 use <GearSet_10to1.scad>
+use <GearSet.scad>
 use <No6_Hardware.scad>
 
 IN_TO_MM = 25.4;
-$fn = 24;
+$fn = 48;
 
 // Each gear's pitch diameter
 gear9_dia = 15;
@@ -58,6 +59,9 @@ rotate([90, 0, -90]) assembly_drawing();
 //rotate([180, 0, 0]) crank_knob_stl();
 //translate([0, 0, 18]) rotate([180, 0, 0]) crank_pin_stl();
 //crank_arm_stl();
+
+// Show the gears
+//drive_train();
 
 // Winder Assembly Drawing
 module assembly_drawing() {
@@ -342,11 +346,14 @@ module drive_train()
 module mid_gear_stl() {
     color("Goldenrod", alpha) {
         difference() {
+/*
             union () {
-                linear_extrude(5) gear27();
-                translate([0,0,5]) linear_extrude(7) gear9();
+                linear_extrude(5) gear27_profile();
+                translate([0,0,5]) linear_extrude(7) gear9_profile();
             }
-            #translate([0,0,-6])
+*/
+            gear27();
+            translate([0,0,-6])
                 cylinder(25, shaft_dia/2, shaft_dia/2);
         }
     }
@@ -356,17 +363,18 @@ module mid_gear_stl() {
 module input_gear_stl() {
     color("Gold", alpha) {
         difference () {
+/*
             union () {
                 translate([0,0,6])
                     linear_extrude(6)
-                        gear30();
+                        gear30_profile();
                 translate([0, 0, -1])
                     cylinder(7, 15/2, 15/2);
             }
-            translate([0,0,-25])
+*/
+            rotate([180,0,0]) translate([0,0,-12.9]) gear30();
+            translate([0,0,-24])
                 crankshaft_core(tol=tolerance);
-            translate([15,0,8.25])
-                cube(4.75, center=true);    
         }
     }
 }
@@ -375,12 +383,15 @@ module input_gear_stl() {
 module drive_gear_stl() {
     color("Sienna", alpha) {
         difference () {
+/*
             union() {
                 linear_extrude(7)
-                    gear9();
+                    gear9_profile();
                 translate([0,0,7])
                     cylinder(5.9, 17.51/2, 17.51/2);
             }
+*/
+            rotate([180,0,0]) translate([0,0,-13]) gear9();
             translate([0,0,-6])
                 cylinder(45, shaft_dia/2, shaft_dia/2);
             translate([0, shaft_dia/2, 10])
