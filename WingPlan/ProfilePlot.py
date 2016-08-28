@@ -18,7 +18,7 @@ def ProfilePlot(arguments, chord=100):
     print(infile.readline())
     polar = [[chord*float(c) for c in line.split()] for line in infile]
 
-    dwg = svgwrite.Drawing(arguments['<outfile>'], profile='tiny')
+    dwg = svgwrite.Drawing(arguments['<outfile>'], size=('170mm', '130mm'), viewBox=('0 0 170 130'))
 
     #offset = [10, 100]
 
