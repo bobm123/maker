@@ -10,14 +10,12 @@ import svgwrite
 from docopt import docopt
 
 
-def read_polars(infile, chord, invert_y=False):
+def read_polars(infile, chord):
 
     #Skips (and prints) airoil name
     print(infile.readline())
     polars = [[chord*float(c) for c in line.split()] for line in infile]
-
-    iy = -1 if invert_y == True else 1
-    polars = [(p[0], iy*p[1]) for p in polars if len(p) == 2]
+    polars = [(p[0], p[1]) for p in polars if len(p) == 2]
 
     return polars
 
@@ -28,7 +26,7 @@ def profile_plot(arguments, chord=100, offset=(10,100)):
     if not arguments['<outfile>']:
         arguments['<outfile>'] = arguments['<infile>']+'.svg'
 
-    polars = read_polars(infile, chord, invert_y=True)
+    polars = read_polars(infile, chord)
 
     # Calculate size of a bounding box
     polar_min = [a for a in map(min, zip(*polars))]
@@ -39,7 +37,7 @@ def profile_plot(arguments, chord=100, offset=(10,100)):
 
     svg_extras = {'fill': 'none', 'stroke_width': .25}
     dwg = svgwrite.Drawing(arguments['<outfile>'], profile='tiny', size=('170mm', '130mm'), viewBox=('0 0 170 130'))
-    grp = svgwrite.container.Group(transform='translate({},{})'.format(*offset))
+    grp = svgwrite.container.Group(transform='translate({},{}) scale(1, -1)'.format(*offset))
     dwg.add(grp)
 
     # Initial move, add the lines, the close
