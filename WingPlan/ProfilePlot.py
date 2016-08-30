@@ -20,6 +20,11 @@ def read_polars(infile, chord):
     return polars
 
 
+def to_cartesian(grp):
+    '''Converts a container group to cartesian coordinates by inverting the y-axis'''
+    xform = grp.attribs.get('transform', '') + 'scale(1, -1)'
+    grp.attribs['transform'] = xform
+
 
 def profile_plot(arguments, chord=100, offset=(10,100)):
     infile = open(arguments['<infile>'], 'r')
@@ -37,7 +42,7 @@ def profile_plot(arguments, chord=100, offset=(10,100)):
 
     svg_extras = {'fill': 'none', 'stroke_width': .25}
     dwg = svgwrite.Drawing(arguments['<outfile>'], profile='tiny', size=('170mm', '130mm'), viewBox=('0 0 170 130'))
-    grp = svgwrite.container.Group(transform='translate({},{}) scale(1, -1)'.format(*offset))
+    grp = svgwrite.container.Group(transform='translate({},{})'.format(*offset))
     dwg.add(grp)
 
     # Initial move, add the lines, the close
@@ -51,6 +56,7 @@ def profile_plot(arguments, chord=100, offset=(10,100)):
     bounds_rect = svgwrite.shapes.Rect(insert=polar_min, size=polar_size, stroke="#0000FF", **svg_extras)
     grp.add(bounds_rect)
 
+    to_cartesian(grp)
     dwg.save()
 
 
