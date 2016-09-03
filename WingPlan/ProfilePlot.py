@@ -12,11 +12,14 @@ from docopt import docopt
 from math import copysign, sin, cos, pi
 
 
-def read_polars(infile, chord):
 
+def read_profile(infile):
+    '''
+    Reads contents a 
+    '''
     #Skips (and prints) airoil name
     print(infile.readline())
-    polars = [[chord*float(c) for c in line.split()] for line in infile]
+    polars = [[float(c) for c in line.split()] for line in infile]
     polars = [(p[0], p[1]) for p in polars if len(p) == 2]
 
     return polars
@@ -61,7 +64,8 @@ def translate(polars, offset):
 
     
 def rotate(polars, angle):
-    angle = 2 * pi * angle / 360.0
+    # Convert to radians,  clockwise positive
+    angle = -2 * pi * angle / 360.0
     mat = [[cos(angle), -sin(angle)],[sin(angle), cos(angle)]]
     return [mat_mult(mat, p) for p in polars]
     
@@ -81,7 +85,7 @@ class Rib:
         self.bounds()
 
         self.profile = translate(self.profile, [-self.profile_size[0] / 2, 0])
-        self.profile = rotate(self.profile, -2.1)
+        self.profile = rotate(self.profile, 1.0)
 
         # Update size of a bounding box
         self.bounds()
@@ -114,21 +118,17 @@ class Rib:
         self.upper = sorted(surface0, key=lambda x: x[0])
         self.lower = sorted(surface1, key=lambda x: x[0])
 
-    def add_spar(self, surface, size, percent_chord, align_right=False, pinnned=False):
-        mm = 25.4
+    def add_spar(self, surface, size, percent_chord, align=(0,0), pinned=False):
 
-        if alight_right:
-            x_offset = (0, size[1])
-        else:
-            x_offset = (0, 0)
+        x_offset = [a*s for a,s in zip(align,size)]
 
-        x_loc = self.polar_min[0]+self.polar_size[0] * percent_chord
+        x_location = self.profile_min[0]+self.profile_size[0] * percent_chord
         position = interpolate (surface, x_location, x_offset)
 
         if pinned:
-            position[1] = self.polar_min[1]
+            position = (position[0], self.profile_min[1])
 
-        spars.append(position, size)
+        self.spars.append((position, size))
         
 
 
@@ -157,27 +157,14 @@ def profile_plot(arguments, chord=100, offset=(0,0)):
     if not arguments['<outfile>']:
         arguments['<outfile>'] = arguments['<infile>']+'.svg'
 
-    polars = read_polars(infile, chord)
+    profile = read_profile(infile)
+    r1 = Rib(profile, 100)
 
-    r1 = Rib(polars, 1)
-    print(r1)
-
-    
-    # Calculate size of a bounding box
-    polar_min = [a for a in map(min, zip(*polars))]
-    polar_max = [a for a in map(max, zip(*polars))]
-    polar_size = [polar_max[0]-polar_min[0], polar_max[1]-polar_min[1]]
-
-    polars = translate(polars, [-polar_size[0] / 2, 0])
-    polars = rotate(polars, -2.1)
-    
-    # Update size of a bounding box
-    polar_min = [a for a in map(min, zip(*polars))]
-    polar_max = [a for a in map(max, zip(*polars))]
-    polar_size = [polar_max[0]-polar_min[0], polar_max[1]-polar_min[1]]
-
-    # Seperate upper and lower surface curves
-    (upper, lower) = split_path(polars)
+    #  add_spar( surface, size, percent, aligment, pinned)
+    mm = 25.4
+    r1.add_spar(r1.lower, (mm/4, mm/4), 0.00, (0,0), True)    #LE
+    r1.add_spar(r1.upper, (mm/8, mm/4), 0.33, (0,1), False)  #Spar 
+    r1.add_spar(r1.upper, (mm/2, mm/8), 1.00, (1,0), False)    #TE
 
     svg_extras = {'fill': 'none', 'stroke_width': .25}
     dwg = svgwrite.Drawing(arguments['<outfile>'], profile='tiny', size=('170mm', '130mm'), viewBox=('0 0 170 130'))
@@ -185,38 +172,22 @@ def profile_plot(arguments, chord=100, offset=(0,0)):
     dwg.add(grp)
 
     # Initial move, add the lines, the close. Plot upper in red
-    path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in upper])
+    path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in r1.upper])
     polar_path = svgwrite.path.Path(d=path_cmd, stroke="#FF0000", **svg_extras);
     grp.add(polar_path);
 
     # Plot lower in green
-    path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in lower])
+    path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in r1.lower])
     polar_path = svgwrite.path.Path(d=path_cmd, stroke="#007F00", **svg_extras);
     grp.add(polar_path);
 
     # Add a bounding box
-    bounds_rect = svgwrite.shapes.Rect(insert=polar_min, size=polar_size, stroke="#0000FF", **svg_extras)
+    bounds_rect = svgwrite.shapes.Rect(insert=r1.profile_min, size=r1.profile_size, stroke="#0000FF", **svg_extras)
     grp.add(bounds_rect)
 
-    # mm to inch
-    mm = 25.4
-    # Add a 1/4" x 1/4" leading edge
-    position = polar_min[0]+polar_size[0] * 0.0
-    le_pos = interpolate (lower, position, (0, 0)) # may just want polar_min for lower left courner
-    le_rect = svgwrite.shapes.Rect(insert=le_pos, size=(mm/4, mm/4), stroke="#00FFFF", **svg_extras)
-    grp.add(le_rect)
-
-    # Add a 3/8" x 1/8" trailing edge
-    position = polar_min[0]+polar_size[0] * 1.0
-    te_pos = interpolate (lower, position, (3*mm/8, 0))
-    te_rect = svgwrite.shapes.Rect(insert=te_pos, size=(3*mm/8, mm/8), stroke="#00FFFF", **svg_extras)
-    grp.add(te_rect)
-
-    # Add a 1/8" x 1/4" main spar
-    position = polar_min[0]+polar_size[0] * 0.33
-    sp_pos = interpolate (upper, position, (0, mm/4))
-    sp_rect = svgwrite.shapes.Rect(insert=sp_pos, size=(mm/8, mm/4), stroke="#00FFFF", **svg_extras)
-    grp.add(sp_rect)
+    for spar in r1.spars:
+        sp_rect = svgwrite.shapes.Rect(insert=spar[0], size=spar[1], stroke="#00FFFF", **svg_extras)
+        grp.add(sp_rect)
 
     to_cartesian(grp)
     dwg.save()
