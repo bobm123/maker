@@ -9,7 +9,7 @@ Usage:
 import sys
 import svgwrite
 from docopt import docopt
-from math import copysign, sin, cos
+from math import copysign, sin, cos, pi
 
 
 def read_polars(infile, chord):
@@ -61,15 +61,77 @@ def translate(polars, offset):
 
     
 def rotate(polars, angle):
+    angle = 2 * pi * angle / 360.0
     mat = [[cos(angle), -sin(angle)],[sin(angle), cos(angle)]]
-    #print(mat)
     return [mat_mult(mat, p) for p in polars]
     
 
 def mat_mult(A, x):
-    return (-x[0], x[1])
+    return(A[0][0]*x[0]+A[0][1]*x[1], A[1][0]*x[0]+A[1][1]*x[1]) 
 
+
+class Rib:
+    spars = []
+
+    def __init__(self, profile, chord = 1):
     
+        self.profile = [(chord*p[0], chord*p[1]) for p in profile]
+
+        # Calculate size of a bounding box
+        self.bounds()
+
+        self.profile = translate(self.profile, [-self.profile_size[0] / 2, 0])
+        self.profile = rotate(self.profile, -2.1)
+
+        # Update size of a bounding box
+        self.bounds()
+
+        # Seperate upper and lower surface curves
+        self.split_path()
+
+    def __str__(self):
+        sstr = ''.join([str(s) for s in self.spars])
+        return 'upper: {}\nlower: {}\nspars:{}\n'.format(self.upper, self.lower, sstr)
+
+    def bounds(self):
+        self.profile_min = [a for a in map(min, zip(*self.profile))]
+        self.profile_max = [a for a in map(max, zip(*self.profile))]
+        self.profile_size = [self.profile_max[0]-self.profile_min[0], self.profile_max[1]-self.profile_min[1]]
+
+    def split_path(self):
+        di = direction(self.profile[0], self.profile[1])
+        surface0 = [(self.profile[0][0], self.profile[0][1])]
+        surface1 = []
+        for i in range(1, len(self.profile)):
+            if di == direction(self.profile[i-1], self.profile[i]):
+                surface0.append(self.profile[i])
+                surface1 = [self.profile[i]] #leaves duplicate of the last point
+            else:
+                surface1.append(self.profile[i])
+        surface1.append((self.profile[0][0], self.profile[0][1]))
+
+        # TODO: determine upper and lower by relative position
+        self.upper = sorted(surface0, key=lambda x: x[0])
+        self.lower = sorted(surface1, key=lambda x: x[0])
+
+    def add_spar(self, surface, size, percent_chord, align_right=False, pinnned=False):
+        mm = 25.4
+
+        if alight_right:
+            x_offset = (0, size[1])
+        else:
+            x_offset = (0, 0)
+
+        x_loc = self.polar_min[0]+self.polar_size[0] * percent_chord
+        position = interpolate (surface, x_location, x_offset)
+
+        if pinned:
+            position[1] = self.polar_min[1]
+
+        spars.append(position, size)
+        
+
+
 def interpolate(curve, xpos, offset = (0,0)):
     '''
     Finds the y value of the curve at x and returns
@@ -97,13 +159,17 @@ def profile_plot(arguments, chord=100, offset=(0,0)):
 
     polars = read_polars(infile, chord)
 
+    r1 = Rib(polars, 1)
+    print(r1)
+
+    
     # Calculate size of a bounding box
     polar_min = [a for a in map(min, zip(*polars))]
     polar_max = [a for a in map(max, zip(*polars))]
     polar_size = [polar_max[0]-polar_min[0], polar_max[1]-polar_min[1]]
 
     polars = translate(polars, [-polar_size[0] / 2, 0])
-    polars = rotate(polars, 2.1)
+    polars = rotate(polars, -2.1)
     
     # Update size of a bounding box
     polar_min = [a for a in map(min, zip(*polars))]
@@ -136,13 +202,13 @@ def profile_plot(arguments, chord=100, offset=(0,0)):
     mm = 25.4
     # Add a 1/4" x 1/4" leading edge
     position = polar_min[0]+polar_size[0] * 0.0
-    le_pos = interpolate (lower, position, (0, 0))
-    le_rect = svgwrite.shapes.Rect(insert=polar_min, size=(mm/4, mm/4), stroke="#00FFFF", **svg_extras)
+    le_pos = interpolate (lower, position, (0, 0)) # may just want polar_min for lower left courner
+    le_rect = svgwrite.shapes.Rect(insert=le_pos, size=(mm/4, mm/4), stroke="#00FFFF", **svg_extras)
     grp.add(le_rect)
 
     # Add a 3/8" x 1/8" trailing edge
     position = polar_min[0]+polar_size[0] * 1.0
-    te_pos = interpolate (lower, position-3*mm/8, (0, 0))
+    te_pos = interpolate (lower, position, (3*mm/8, 0))
     te_rect = svgwrite.shapes.Rect(insert=te_pos, size=(3*mm/8, mm/8), stroke="#00FFFF", **svg_extras)
     grp.add(te_rect)
 
