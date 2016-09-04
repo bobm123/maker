@@ -1,5 +1,5 @@
 mm = 25.4;
-tol = .1; //Tolerance for hole cleanrences
+tol = .15; //Tolerance for hole cleanrences
 $fn = 48;
 
 //assembly();
@@ -11,11 +11,12 @@ cavity_r = 2.6;
 cavity_h = 6;
 flange_r = 6;
 lever_h = 7;
+base_t = 1.2;
 
 module print_layout()
 {
     translate([0, 0, 0]) case();
-    rotate([0, 180, 0]) translate([-6, 10, -cavity_h-2]) cap();
+    translate([6, 10, 0]) cap();
     translate([-5,18,0]) lever();
 }
 
@@ -55,8 +56,8 @@ module lever()
 module cap()
 {
     difference() {
-        translate([0,0,0]) cylinder(h=cavity_h+2, r=cavity_r+1.75);
-        translate([0,0,-.1]) cylinder(h=cavity_h+1, r=cavity_r+.75+tol);
+        translate([0,0, 0]) cylinder(h=cavity_h+.8, r=cavity_r+2);
+        translate([0,0, .81]) cylinder(h=cavity_h, r=cavity_r+1+tol);
     }
 }
 
@@ -71,18 +72,16 @@ module screw()
 module case() {
     difference() {
         union() {
-            translate([0, 0, 0]) cylinder(h=cavity_h+3, r=cavity_r+.75);
-            cylinder(h=1.5, r=flange_r);
-            linear_extrude(height=1.5)
-                minkowski()
-                {
-                    square([22, 5], center=true);
-                    circle(r=2.5);
-                }
+            translate([0, 0, base_t]) cylinder(h=cavity_h, r=cavity_r+1);
+            hull() {
+                cylinder(h=base_t, r=flange_r);
+                translate([ 9, 0, 0]) cylinder(h=base_t, r=3);
+                translate([-9, 0, 0]) cylinder(h=base_t, r=3);
+            }
         }
         translate([0, 0, 3.1]) cylinder(h=cavity_h, r=cavity_r);
-        translate([ 9, 0, -.1]) screw();
-        translate([-9, 0, -.1]) screw();
+        translate([ 9, 0, -.02]) screw();
+        translate([-9, 0, -.02]) screw();
         translate([0,0,-1]) cylinder(h=8, r=shaft_r+tol);
     }
 }
