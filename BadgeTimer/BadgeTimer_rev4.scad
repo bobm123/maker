@@ -11,22 +11,22 @@ cavity_h = 6;
 flange_r = 6;
 lever_h = 7;
 base_t = 1.2;
-paddle_t = 2.8;
+paddle_t = 3.8;
 paddle_shaft = lever_h+base_t+1;
 
 module print_layout()
 {
     translate([0, 0, 0]) case();
-    translate([6, 11, 0]) cap();
-    translate([-5,20,0]) lever();
-    translate([0,-10, 1.2]) paddle();
+    translate([6, 11.5, 0]) cap();
+    translate([-5,20.5,0]) lever();
+    translate([0,-9, paddle_t/2]) paddle();
 }
 
 module paddle()
 {
 
     translate([0, 0, 0]) 
-        rotate([45, 0, 0]) 
+        rotate([0, 0, 0]) 
             cube([paddle_shaft, paddle_t*.707, paddle_t*.707], center=true);
     
     translate([(paddle_shaft+base_t)/2, 0, 0])
@@ -59,8 +59,8 @@ module lever()
 module cap()
 {
     difference() {
-        translate([0,0, 0]) cylinder(h=cavity_h+base_t, r=cavity_r+1.6);
-        translate([0,0, base_t+.01]) cylinder(h=cavity_h, r=cavity_r+.6+tol);
+        translate([0,0, 0]) cylinder(h=cavity_h+base_t, r=cavity_r+2);
+        translate([0,0, base_t+.01]) cylinder(h=cavity_h, r=cavity_r+1+tol);
     }
 }
 
