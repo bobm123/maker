@@ -25,67 +25,28 @@ def read_profile(infile):
     return polars
 
 
-def direction(p0, p1):
-    '''
-    Indicates if the series of points is moving to the left right.
-    returns -1 if p0 is to the left of p1, otherwise returns 1
-    '''
-    return copysign(1, p0[0] - p1[0])
-
-
-# TODO: Clean this up. determine upper and lower
-def split_path(polars):
-    di = direction(polars[0], polars[1])
-    surface0 = [(polars[0][0], polars[0][1])]
-    surface1 = []
-    for i in range(1, len(polars)):
-        if di == direction(polars[i-1], polars[i]):
-            surface0.append(polars[i])
-            surface1 = [polars[i]] #leaves duplicate of the last point
-        else:
-            surface1.append(polars[i])
-    surface1.append((polars[0][0], polars[0][1]))
-
-    surface0 = sorted(surface0, key=lambda x: x[0])
-    surface1 = sorted(surface1, key=lambda x: x[0])
-
-    return [surface0, surface1]
-
-
 def to_cartesian(grp):
-    '''Converts a container group to cartesian coordinates by inverting the y-axis'''
+    '''Converts a container group to cartesian by inverting the y-axis'''
     xform = grp.attribs.get('transform', '') + 'scale(1, -1)'
     grp.attribs['transform'] = xform
 
     
-def translate(polars, offset):
-    polars = [(p[0]+offset[0], p[1]+offset[1]) for p in polars]
-    return polars
-
-    
-def rotate(polars, angle):
-    # Convert to radians,  clockwise positive
-    angle = -2 * pi * angle / 360.0
-    mat = [[cos(angle), -sin(angle)],[sin(angle), cos(angle)]]
-    return [mat_mult(mat, p) for p in polars]
-    
-
-def mat_mult(A, x):
-    return(A[0][0]*x[0]+A[0][1]*x[1], A[1][0]*x[0]+A[1][1]*x[1]) 
-
-
 class Rib:
+    '''A class to define a rib for a model airplane plan given
+    the airfoil shape (profile) and chord length. Has a method
+    for defining spars, including leading and trailing edge 
+    peices'''
     spars = []
 
-    def __init__(self, profile, chord = 1):
+    def __init__(self, profile, chord = 1, angle = 0.0):
     
         self.profile = [(chord*p[0], chord*p[1]) for p in profile]
-
+ 
         # Calculate size of a bounding box
         self.bounds()
 
-        self.profile = translate(self.profile, [-self.profile_size[0] / 2, 0])
-        self.profile = rotate(self.profile, 1.0)
+        self.profile = self.translate(self.profile, [-self.profile_size[0] / 2, 0])
+        self.profile = self.rotate(self.profile, angle)
 
         # Update size of a bounding box
         self.bounds()
@@ -97,17 +58,12 @@ class Rib:
         sstr = ''.join([str(s) for s in self.spars])
         return 'upper: {}\nlower: {}\nspars:{}\n'.format(self.upper, self.lower, sstr)
 
-    def bounds(self):
-        self.profile_min = [a for a in map(min, zip(*self.profile))]
-        self.profile_max = [a for a in map(max, zip(*self.profile))]
-        self.profile_size = [self.profile_max[0]-self.profile_min[0], self.profile_max[1]-self.profile_min[1]]
-
     def split_path(self):
-        di = direction(self.profile[0], self.profile[1])
+        di = self.direction(self.profile[0], self.profile[1])
         surface0 = [(self.profile[0][0], self.profile[0][1])]
         surface1 = []
         for i in range(1, len(self.profile)):
-            if di == direction(self.profile[i-1], self.profile[i]):
+            if di == self.direction(self.profile[i-1], self.profile[i]):
                 surface0.append(self.profile[i])
                 surface1 = [self.profile[i]] #leaves duplicate of the last point
             else:
@@ -118,8 +74,55 @@ class Rib:
         self.upper = sorted(surface0, key=lambda x: x[0])
         self.lower = sorted(surface1, key=lambda x: x[0])
 
-    def add_spar(self, surface, size, percent_chord, align=(0,0), pinned=False):
+    def bounds(self):
+        '''Determines the bounds of the profile and sets the min and 
+        max coordinates and its bounding box'''
+        self.profile_min = [a for a in map(min, zip(*self.profile))]
+        self.profile_max = [a for a in map(max, zip(*self.profile))]
+        self.profile_size = [self.profile_max[0]-self.profile_min[0], self.profile_max[1]-self.profile_min[1]]
 
+    def direction(self, p0, p1):
+        '''
+        Indicates if the series of points is moving to the left right.
+        returns -1 if p0 is to the left of p1, otherwise returns 1
+        '''
+        return copysign(1, p0[0] - p1[0])
+
+    def translate(self, polars, offset):
+        '''shifts a set of points by the given offset'''
+        polars = [(p[0]+offset[0], p[1]+offset[1]) for p in polars]
+        return polars
+        
+    def rotate(self, polars, angle):
+        '''Rotates a set of points by the given angle'''
+        # Convert to radians,  clockwise positive
+        angle = -2 * pi * angle / 360.0
+        mat = [[cos(angle), -sin(angle)],[sin(angle), cos(angle)]]
+        return [self.mat_mult(mat, p) for p in polars]
+
+    def mat_mult(self, A, x):
+        '''Multiplies a 2x2 matrix and a vector of length 2'''
+        return(A[0][0]*x[0]+A[0][1]*x[1], A[1][0]*x[0]+A[1][1]*x[1]) 
+
+    def add_spar(self, surface, size, percent_chord, align=(0,0), pinned=False):
+        '''Adds a spar to the list. Leading and trailing edges are
+        also spars with appropriate parameters.
+        
+        Positional arguments:
+        surface -- the upper or lower surface, but could be another reference
+        size -- a len 2 list of the spars cross section size
+        percent_chord -- distance from LE as a percentage of the chord
+
+        Keyword arguments:
+        align -- length 2 list of values 0 or 1 that indicates which corner of 
+                 the spar's cross section is placed on the surface. 
+                 [0,0] (default) places at the spar's lower left
+                 [1,0] places at the spar's lower right
+                 [0,1] places at the spar's upper left
+                 [1,1] places at the spar's upper right
+        pinned -- forces the spar to the lower surface, pinning it to the
+                  building board.
+        '''
         x_offset = [a*s for a,s in zip(align,size)]
 
         x_location = self.profile_min[0]+self.profile_size[0] * percent_chord
@@ -158,7 +161,7 @@ def profile_plot(arguments, chord=100, offset=(0,0)):
         arguments['<outfile>'] = arguments['<infile>']+'.svg'
 
     profile = read_profile(infile)
-    r1 = Rib(profile, 100)
+    r1 = Rib(profile, 100, 2.1)
 
     #  add_spar( surface, size, percent, aligment, pinned)
     mm = 25.4
