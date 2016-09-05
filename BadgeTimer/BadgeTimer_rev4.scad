@@ -46,10 +46,8 @@ module lever()
             translate([ 0,0,0]) cylinder(h=lever_h, r=flange_r-1);
             translate([ 0,0,lever_h-1.5]) cylinder(h=1, r1 =flange_r-1, r2=flange_r);
             translate([ 0,0,lever_h-.5]) cylinder(h=.5, r=flange_r);
-            translate([ 0,0, 3*.707])rotate([45,0,0]) hull() {
-                translate([ 0,0,0]) cube(3, center=true);
-                translate([15,0,0]) sphere(r=3*.707, center=true);
-            }
+            translate([ 0,0,2.6]) rotate([0,90,0]) cylinder(h=15, r=1.5);
+            translate([15,0,2.6]) sphere(r=1.5, center=true);
         }
         translate([0,0,lever_h/2]) 
             cube([paddle_t*.707+tol, paddle_t*.707+tol, lever_h+.02], center=true);
