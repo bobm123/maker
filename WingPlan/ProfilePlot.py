@@ -10,7 +10,7 @@ import sys
 import svgwrite
 from docopt import docopt
 from math import copysign, sin, cos, pi
-
+import pyclipper
 
 
 def read_profile(infile):
@@ -71,9 +71,11 @@ class Rib:
         surface1.append((self.profile[0][0], self.profile[0][1]))
 
         # TODO: determine upper and lower by relative position
-        self.upper = sorted(surface0, key=lambda x: x[0])
+        #self.upper = sorted(surface0, key=lambda x: x[0])
         self.lower = sorted(surface1, key=lambda x: x[0])
-
+        self.upper = surface0
+        #self.lower = surface1
+        
     def bounds(self):
         '''Determines the bounds of the profile and sets the min and 
         max coordinates and its bounding box'''
@@ -155,7 +157,7 @@ def interpolate(curve, xpos, offset = (0,0)):
     return(xpos-offset[0], ypos-offset[1])
 
 
-def profile_plot(arguments, chord=100, offset=(0,0)):
+def profile_plot(arguments, chord=100, offset=(60,20)):
     infile = open(arguments['<infile>'], 'r')
     if not arguments['<outfile>']:
         arguments['<outfile>'] = arguments['<infile>']+'.svg'
@@ -171,6 +173,9 @@ def profile_plot(arguments, chord=100, offset=(0,0)):
 
     svg_extras = {'fill': 'none', 'stroke_width': .25}
     dwg = svgwrite.Drawing(arguments['<outfile>'], profile='tiny', size=('170mm', '130mm'), viewBox=('0 0 170 130'))
+
+    ###########################################
+    # Original drawing group
     grp = svgwrite.container.Group(transform='translate({},{})'.format(*offset))
     dwg.add(grp)
 
@@ -181,18 +186,66 @@ def profile_plot(arguments, chord=100, offset=(0,0)):
 
     # Plot lower in green
     path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in r1.lower])
-    polar_path = svgwrite.path.Path(d=path_cmd, stroke="#007F00", **svg_extras);
+    polar_path = svgwrite.path.Path(d=path_cmd, stroke="#00FF00", **svg_extras);
     grp.add(polar_path);
 
-    # Add a bounding box
-    bounds_rect = svgwrite.shapes.Rect(insert=r1.profile_min, size=r1.profile_size, stroke="#0000FF", **svg_extras)
-    grp.add(bounds_rect)
-
+    # Draw the spars
     for spar in r1.spars:
         sp_rect = svgwrite.shapes.Rect(insert=spar[0], size=spar[1], stroke="#00FFFF", **svg_extras)
         grp.add(sp_rect)
 
+    # Add a bounding box
+    bounds_rect = svgwrite.shapes.Rect(insert=r1.profile_min, size=r1.profile_size, stroke="#7f7f7f", **svg_extras)
+    grp.add(bounds_rect)
+
+    ###########################################
+    # Add another group for clipper experiments
+    clipper_grp = svgwrite.container.Group(transform='translate({},{})'.format(60,40))
+    dwg.add(clipper_grp)
+
+    # Add the original bounding box as a path 
+    #TODO: make this a function, will need it again
+    bounds_path = [
+        #[r1.profile_min[0],0], # cuts off
+        #[r1.profile_max[0],0], #  the lower half
+        [r1.profile_min[0],r1.profile_min[1]],
+        [r1.profile_max[0],r1.profile_min[1]],
+        [r1.profile_max[0],r1.profile_max[1]],
+        [r1.profile_min[0],r1.profile_max[1]]
+    ]
+    path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in bounds_path])+'Z'
+    bounds = svgwrite.path.Path(d=path_cmd, stroke="#7f7f7f", **svg_extras);
+    clipper_grp.add(bounds);
+
+    # Make a clipper object
+    SCALING_FACTOR = 1000
+    pc = pyclipper.Pyclipper()
+
+    # Add a list of paths and it will 'join' them
+    #full_path = [r1.upper, r1.lower]
+    #pc.AddPaths(pyclipper.scale_to_clipper(full_path, SCALING_FACTOR), pyclipper.PT_SUBJECT, True)
+
+    # or just use the profile
+    pc.AddPath(pyclipper.scale_to_clipper(r1.profile, SCALING_FACTOR), pyclipper.PT_SUBJECT, True)
+
+    # for now, clip inside the bounding box
+    pc.AddPath(pyclipper.scale_to_clipper(bounds_path, SCALING_FACTOR), pyclipper.PT_CLIP, True)
+
+    # Find the intersection of the profile and its bounding box (shoudl still be the profile
+    solution = pc.Execute(pyclipper.CT_INTERSECTION, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
+
+    # Add the clipped path to the clipper group
+    for s in pyclipper.scale_from_clipper(solution, SCALING_FACTOR):
+        path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in s])+'Z'
+        polar_path = svgwrite.path.Path(d=path_cmd, stroke="#ff7f00", **svg_extras);
+        clipper_grp.add(polar_path);
+
+    # Warning, points will be re-ordered
+    #print(pyclipper.scale_from_clipper(solution, SCALING_FACTOR))
+
+    # Flip the y-axis on both groups and save the drawing file
     to_cartesian(grp)
+    to_cartesian(clipper_grp)
     dwg.save()
 
 
