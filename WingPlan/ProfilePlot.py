@@ -125,7 +125,7 @@ class Rib:
         '''
         x_offset = [a*s for a,s in zip(align, size)]
         x_location = self.profile_min[0]+self.profile_size[0] * percent_chord
-        position = interpolate (surface, x_location, x_offset)
+        position = self.interpolate (surface, x_location, x_offset)
         if pinned:
             position = (position[0], self.profile_min[1])
         self.spars.append(self.rect2path(position, size))
@@ -144,32 +144,32 @@ class Rib:
         return path
 
 
-def interpolate(curve, xpos, offset = (0,0)):
+    def interpolate(self, curve, xpos, offset = (0,0)):
+        '''
+        Finds the y value of the curve at x and returns
+        them as a tuple with and optional offset.
+        '''
+        for i in range(0, len(curve)-1):
+            p0 = curve[i]
+            p1 = curve[i+1]
+            if p0[0] <= xpos and xpos <= p1[0]:
+                break # found the correct interval
+
+        if p0[0] == p1[0]:
+            # point found on a segment with infinite slope
+            return (xpos, (p0[1]+p1[1])/2.0)
+
+        m = ((p1[1]-p0[1])/(p1[0]-p0[0]))
+        ypos = m*(xpos-p0[0])+p0[1]
+        return(xpos-offset[0], ypos-offset[1])
+
+
+def basic_rib(profile, chord, angle):
     '''
-    Finds the y value of the curve at x and returns
-    them as a tuple with and optional offset.
+    defines a classic balsa model plane rib pattern with solid leading
+    and tailing edges and one main spar at 33% of the chord.
     '''
-    for i in range(0, len(curve)-1):
-        p0 = curve[i]
-        p1 = curve[i+1]
-        if p0[0] <= xpos and xpos <= p1[0]:
-            break # found the correct interval
 
-    if p0[0] == p1[0]:
-        # point found on a segment with infinite slope
-        return (xpos, (p0[1]+p1[1])/2.0)
-
-    m = ((p1[1]-p0[1])/(p1[0]-p0[0]))
-    ypos = m*(xpos-p0[0])+p0[1]
-    return(xpos-offset[0], ypos-offset[1])
-
-
-def profile_plot(arguments, chord=100, offset=(60, 20)):
-    infile = open(arguments['<infile>'], 'r')
-    if not arguments['<outfile>']:
-        arguments['<outfile>'] = arguments['<infile>']+'.svg'
-
-    profile = read_profile(infile)
     r1 = Rib(profile, 100, 2.1)
 
     #  add_spar( surface, size, percent, aligment, pinned)
@@ -178,8 +178,33 @@ def profile_plot(arguments, chord=100, offset=(60, 20)):
     r1.add_spar(r1.upper, ((3/32.)*mm, (1/4.)*mm), 0.33, (0,1), False)  # Spar
     r1.add_spar(r1.upper, ((1/2.)*mm, (5/32.)*mm), 1.00, (1,0), True)   # TE
 
+    return(r1)
+
+
+def addpath(path, grp, closed = False, color='#FF0000'):
+    '''
+    adds a polygon to an svg group 
+    '''
     svg_extras = {'fill': 'none', 'stroke_width': .25}
+
+    # Initial move, add then add each line segment, optionally close 
+    path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in path])
+    if closed:
+        path_cmd += 'Z'
+    svg_path = svgwrite.path.Path(d=path_cmd, stroke=color, **svg_extras)
+    grp.add(svg_path)
+
+
+def profile_plot(arguments, chord=100, offset=(60, 20)):
+    infile = open(arguments['<infile>'], 'r')
+    if not arguments['<outfile>']:
+        arguments['<outfile>'] = arguments['<infile>']+'.svg'
+
+    profile = read_profile(infile)
+    r1 = basic_rib(profile, 100, 2.1)
+
     dwg = svgwrite.Drawing(arguments['<outfile>'], profile='tiny', size=('170mm', '130mm'), viewBox=('0 0 170 130'))
+    svg_extras = {'fill': 'none', 'stroke_width': .25}
 
     ###########################################
     # Original drawing group
@@ -187,26 +212,17 @@ def profile_plot(arguments, chord=100, offset=(60, 20)):
     grp = svgwrite.container.Group(transform='translate({},{})'.format(*offset))
     dwg.add(grp)
 
-    # Initial move, add the lines, the close. Plot upper in red
-    path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in r1.upper])
-    polar_path = svgwrite.path.Path(d=path_cmd, stroke="#FF0000", **svg_extras)
-    grp.add(polar_path)
-
-    # Plot lower
-    path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in r1.lower])
-    polar_path = svgwrite.path.Path(d=path_cmd, stroke="#FF0000", **svg_extras)
-    grp.add(polar_path)
+    # Add upper and lower surfaces in red
+    addpath(r1.upper, grp, color='#FF0000') 
+    addpath(r1.lower, grp, color='#FF0000') 
 
     # Draw the spars
     for spar in r1.spars:
-        #sp_rect = svgwrite.shapes.Rect(insert=spar[0], size=spar[1], stroke="#00FFFF", **svg_extras)
-        path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in spar])+'Z'
-        sp_rect = svgwrite.path.Path(d=path_cmd, stroke="#0000FF", **svg_extras)
-        grp.add(sp_rect)
+        addpath(spar, grp, closed=True, color='#0000FF')
 
     # Add a bounding box
-    bounds_rect = svgwrite.shapes.Rect(insert=r1.profile_min, size=r1.profile_size, stroke="#7f7f7f", **svg_extras)
-    grp.add(bounds_rect)
+    bounds_path =  r1.rect2path (r1.profile_min, r1.profile_size)
+    addpath(bounds_path, grp, closed=True, color='#7F7F7F')
 
     ###########################################
     # Add another group for clipper experiments
@@ -216,9 +232,7 @@ def profile_plot(arguments, chord=100, offset=(60, 20)):
 
     # Draw the bounding box
     bounds_path =  r1.rect2path (r1.profile_min, r1.profile_size)
-    path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in bounds_path])+'Z'
-    bounds = svgwrite.path.Path(d=path_cmd, stroke="#7f7f7f", **svg_extras)
-    clipper_grp.add(bounds)
+    addpath(bounds_path, clipper_grp, closed=True, color='#7F7F7F')
 
     # Make a clipper object
     SCALING_FACTOR = 1000
@@ -239,9 +253,7 @@ def profile_plot(arguments, chord=100, offset=(60, 20)):
 
     # Add the clipped path to the clipper group
     for s in pyclipper.scale_from_clipper(solution, SCALING_FACTOR):
-        path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in s])+'Z'
-        polar_path = svgwrite.path.Path(d=path_cmd, stroke="#FF0000", **svg_extras)
-        clipper_grp.add(polar_path);
+        addpath(s, clipper_grp, closed=True, color='#FF0000')
 
     # Warning, points will be re-ordered
     #print(pyclipper.scale_from_clipper(solution, SCALING_FACTOR))
