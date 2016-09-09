@@ -71,10 +71,8 @@ class Rib:
         surface1.append((self.profile[0][0], self.profile[0][1]))
 
         # TODO: determine upper and lower by relative position
-        #self.upper = sorted(surface0, key=lambda x: x[0])
+        self.upper = sorted(surface0, key=lambda x: x[0])
         self.lower = sorted(surface1, key=lambda x: x[0])
-        self.upper = surface0
-        #self.lower = surface1
         
     def bounds(self):
         '''Determines the bounds of the profile and sets the min and 
@@ -125,13 +123,15 @@ class Rib:
         pinned -- forces the spar to the lower surface, pinning it to the
                   building board.
         '''
-        x_offset = [a*s for a,s in zip(align,size)]
+
+        x_offset = [a*s for a,s in zip(align, size)]
 
         x_location = self.profile_min[0]+self.profile_size[0] * percent_chord
         position = interpolate (surface, x_location, x_offset)
 
         if pinned:
             position = (position[0], self.profile_min[1])
+
 
         self.spars.append((position, size))
         
@@ -157,7 +157,7 @@ def interpolate(curve, xpos, offset = (0,0)):
     return(xpos-offset[0], ypos-offset[1])
 
 
-def profile_plot(arguments, chord=100, offset=(60,20)):
+def profile_plot(arguments, chord=100, offset=(60, 20)):
     infile = open(arguments['<infile>'], 'r')
     if not arguments['<outfile>']:
         arguments['<outfile>'] = arguments['<infile>']+'.svg'
@@ -200,7 +200,7 @@ def profile_plot(arguments, chord=100, offset=(60,20)):
 
     ###########################################
     # Add another group for clipper experiments
-    clipper_grp = svgwrite.container.Group(transform='translate({},{})'.format(60,40))
+    clipper_grp = svgwrite.container.Group(transform='translate({},{})'.format(60, 40))
     dwg.add(clipper_grp)
 
     # Add the original bounding box as a path 
