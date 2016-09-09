@@ -123,18 +123,25 @@ class Rib:
         pinned -- forces the spar to the lower surface, pinning it to the
                   building board.
         '''
-
         x_offset = [a*s for a,s in zip(align, size)]
-
         x_location = self.profile_min[0]+self.profile_size[0] * percent_chord
         position = interpolate (surface, x_location, x_offset)
-
         if pinned:
             position = (position[0], self.profile_min[1])
+        self.spars.append(self.rec2path(position, size))
 
-
-        self.spars.append((position, size))
-        
+    def rec2path(self, pos, size):
+        '''
+        returns a set of coordiantes for the given rectangle
+        of pos = (x,y) and size=(width, height)
+        '''
+        path = [
+            (pos[0],         pos[1]),
+            (pos[0]+size[0], pos[1]),
+            (pos[0]+size[0], pos[1]+size[1]),
+            (pos[0],         pos[1]+size[1])
+        ]
+        return path
 
 
 def interpolate(curve, xpos, offset = (0,0)):
@@ -181,17 +188,19 @@ def profile_plot(arguments, chord=100, offset=(60, 20)):
 
     # Initial move, add the lines, the close. Plot upper in red
     path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in r1.upper])
-    polar_path = svgwrite.path.Path(d=path_cmd, stroke="#FF0000", **svg_extras);
-    grp.add(polar_path);
+    polar_path = svgwrite.path.Path(d=path_cmd, stroke="#FF0000", **svg_extras)
+    grp.add(polar_path)
 
     # Plot lower in green
     path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in r1.lower])
-    polar_path = svgwrite.path.Path(d=path_cmd, stroke="#00FF00", **svg_extras);
-    grp.add(polar_path);
+    polar_path = svgwrite.path.Path(d=path_cmd, stroke="#00FF00", **svg_extras)
+    grp.add(polar_path)
 
     # Draw the spars
     for spar in r1.spars:
-        sp_rect = svgwrite.shapes.Rect(insert=spar[0], size=spar[1], stroke="#00FFFF", **svg_extras)
+        #sp_rect = svgwrite.shapes.Rect(insert=spar[0], size=spar[1], stroke="#00FFFF", **svg_extras)
+        path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in spar])+'Z'
+        sp_rect = svgwrite.path.Path(d=path_cmd, stroke="#00FF00", **svg_extras)
         grp.add(sp_rect)
 
     # Add a bounding box
@@ -214,8 +223,8 @@ def profile_plot(arguments, chord=100, offset=(60, 20)):
         [r1.profile_min[0],r1.profile_max[1]]
     ]
     path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in bounds_path])+'Z'
-    bounds = svgwrite.path.Path(d=path_cmd, stroke="#7f7f7f", **svg_extras);
-    clipper_grp.add(bounds);
+    bounds = svgwrite.path.Path(d=path_cmd, stroke="#7f7f7f", **svg_extras)
+    clipper_grp.add(bounds)
 
     # Make a clipper object
     SCALING_FACTOR = 1000
@@ -237,7 +246,7 @@ def profile_plot(arguments, chord=100, offset=(60, 20)):
     # Add the clipped path to the clipper group
     for s in pyclipper.scale_from_clipper(solution, SCALING_FACTOR):
         path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in s])+'Z'
-        polar_path = svgwrite.path.Path(d=path_cmd, stroke="#ff7f00", **svg_extras);
+        polar_path = svgwrite.path.Path(d=path_cmd, stroke="#ff7f00", **svg_extras)
         clipper_grp.add(polar_path);
 
     # Warning, points will be re-ordered
