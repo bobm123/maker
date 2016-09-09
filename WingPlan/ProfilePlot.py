@@ -237,11 +237,11 @@ def profile_plot(arguments, chord=100, offset=(60, 20)):
     # or just use the profile
     pc.AddPath(pyclipper.scale_to_clipper(r1.profile, SCALING_FACTOR), pyclipper.PT_SUBJECT, True)
 
-    # for now, clip inside the bounding box
-    pc.AddPath(pyclipper.scale_to_clipper(bounds_path, SCALING_FACTOR), pyclipper.PT_CLIP, True)
+    # Punch out spars
+    pc.AddPaths(pyclipper.scale_to_clipper(r1.spars, SCALING_FACTOR), pyclipper.PT_CLIP, True)
 
-    # Find the intersection of the profile and its bounding box (shoudl still be the profile
-    solution = pc.Execute(pyclipper.CT_INTERSECTION, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
+    # Find the intersection of the profile and its bounding box (should still be the profile)
+    solution = pc.Execute(pyclipper.CT_DIFFERENCE, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
 
     # Add the clipped path to the clipper group
     for s in pyclipper.scale_from_clipper(solution, SCALING_FACTOR):
