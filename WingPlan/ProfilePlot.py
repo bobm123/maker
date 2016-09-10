@@ -210,10 +210,17 @@ def addpath(path, grp, closed = False, color='#FF0000'):
     grp.add(svg_path)
 
 
-def profile_plot(arguments, chord=100, offset=(60, 20)):
+def profile_plot(arguments):
     infile = open(arguments['<infile>'], 'r')
     if not arguments['<outfile>']:
         arguments['<outfile>'] = arguments['<infile>']+'.svg'
+
+    # Setup an SVG drawing with two groups
+    dwg = svgwrite.Drawing(arguments['<outfile>'], profile='tiny', size=('170mm', '130mm'), viewBox=('0 0 170 130'))
+    grp = svgwrite.container.Group(transform='translate({},{})'.format(60, 20))
+    dwg.add(grp)
+    rib_grp = svgwrite.container.Group(transform='translate({},{})'.format(60, 40))
+    dwg.add(rib_grp)
 
     profile = read_profile(infile)
 
@@ -222,52 +229,28 @@ def profile_plot(arguments, chord=100, offset=(60, 20)):
     to_mm = 25.4
     rib_pattern = r1.basic_rib((3/16., 5/16.), (1/2., 5/32.), (3/32., 1/4), to_mm)
 
-    dwg = svgwrite.Drawing(arguments['<outfile>'], profile='tiny', size=('170mm', '130mm'), viewBox=('0 0 170 130'))
-    svg_extras = {'fill': 'none', 'stroke_width': .25}
-
     ###########################################
     # Show the profile with spar placement
     ###########################################
-    grp = svgwrite.container.Group(transform='translate({},{})'.format(*offset))
-    dwg.add(grp)
+
+    # Add a bounding box
+    addpath(r1.bounds_path, grp, closed=True, color='#7F7F7F')
 
     # Add upper and lower surfaces in red
-    addpath(r1.upper, grp, color='#FF0000') 
-    addpath(r1.lower, grp, color='#FF0000') 
+    addpath(r1.profile, grp, color='#FF0000')
 
     # Draw the spars
     for spar in r1.spars:
         addpath(spar, grp, closed=True, color='#0000FF')
 
-    # Add a bounding box
-    addpath(r1.bounds_path, grp, closed=True, color='#7F7F7F')
-
     ###########################################
     # Add another group for the rib pattern
     ###########################################
-    rib_grp = svgwrite.container.Group(transform='translate({},{})'.format(60, 40))
-    dwg.add(rib_grp)
 
     # Draw the bounding box
     addpath(r1.bounds_path, rib_grp, closed=True, color='#7F7F7F')
 
-    # Make a clipper object
-    SCALING_FACTOR = 1000
-    pc = pyclipper.Pyclipper()
-
-    # Add the profile to the clipper
-    #pc.AddPath(pyclipper.scale_to_clipper(r1.profile, SCALING_FACTOR), pyclipper.PT_SUBJECT, True)
-
-    # The second operand is a list of spars
-    #pc.AddPaths(pyclipper.scale_to_clipper(r1.spars, SCALING_FACTOR), pyclipper.PT_CLIP, True)
-
-    # Subtract the spar cutouts from the profile 
-    #solution = pc.Execute(pyclipper.CT_DIFFERENCE, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
-
-    # Add the resulting path to the SVG group
-    #for s in pyclipper.scale_from_clipper(solution, SCALING_FACTOR):
-    #    addpath(s, rib_grp, closed=True, color='#FF0000')
-
+    # Draw the rib pattern
     for r in rib_pattern:
         addpath(r, rib_grp, closed=True, color='#FF0000')
 
