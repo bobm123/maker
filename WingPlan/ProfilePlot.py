@@ -38,6 +38,9 @@ class Rib:
     peices'''
     spars = []
 
+    SCALING_FACTOR = 1000
+    clipper = pyclipper.Pyclipper()
+
     def __init__(self, profile, chord = 1, angle = 0.0):
     
         self.profile = [(chord*p[0], chord*p[1]) for p in profile]
@@ -80,6 +83,7 @@ class Rib:
         self.profile_min = [a for a in map(min, zip(*self.profile))]
         self.profile_max = [a for a in map(max, zip(*self.profile))]
         self.profile_size = [self.profile_max[0]-self.profile_min[0], self.profile_max[1]-self.profile_min[1]]
+        self.bounds_path =  self.rect2path(self.profile_min, self.profile_size)
 
     def direction(self, p0, p1):
         '''
@@ -164,21 +168,32 @@ class Rib:
         return(xpos-offset[0], ypos-offset[1])
 
 
-def basic_rib(profile, chord, angle):
-    '''
-    defines a classic balsa model plane rib pattern with solid leading
-    and tailing edges and one main spar at 33% of the chord.
-    '''
+    def basic_rib(self, le_size, te_size, sp_size, to_mm=1):
+        '''
+        defines a classic balsa model plane rib pattern with solid leading
+        and tailing edges and one main spar at 33% of the chord.
+        '''
 
-    r1 = Rib(profile, 100, 2.1)
+        # Apply conversion to the spars sizes
+        le_size = [to_mm * x for x in le_size]
+        te_size = [to_mm * x for x in te_size]
+        sp_size = [to_mm * x for x in sp_size]
 
-    #  add_spar( surface, size, percent, aligment, pinned)
-    mm = 25.4
-    r1.add_spar(r1.lower, ((3/16.)*mm, (5/16.)*mm), 0.00, (0,0), True)  # LE
-    r1.add_spar(r1.upper, ((3/32.)*mm, (1/4.)*mm), 0.33, (0,1), False)  # Spar
-    r1.add_spar(r1.upper, ((1/2.)*mm, (5/32.)*mm), 1.00, (1,0), True)   # TE
+        #  add_spar( surface, size, percent, aligment, pinned)
+        self.add_spar(self.lower, le_size, 0.00, (0,0), True)  # LE
+        self.add_spar(self.upper, sp_size, 0.33, (0,1), False) # Spar
+        self.add_spar(self.upper, te_size, 1.00, (1,0), True)  # TE
 
-    return(r1)
+        # Add the profile to the clipper
+        self.clipper.AddPath(pyclipper.scale_to_clipper(self.profile, self.SCALING_FACTOR), pyclipper.PT_SUBJECT, True)
+
+        # The second operand is a list of spars
+        self.clipper.AddPaths(pyclipper.scale_to_clipper(self.spars, self.SCALING_FACTOR), pyclipper.PT_CLIP, True)
+
+        # Subtract the spar cutouts from the profile 
+        rib_path = self.clipper.Execute(pyclipper.CT_DIFFERENCE, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
+
+        return(pyclipper.scale_from_clipper(rib_path, self.SCALING_FACTOR))
 
 
 def addpath(path, grp, closed = False, color='#FF0000'):
@@ -201,13 +216,17 @@ def profile_plot(arguments, chord=100, offset=(60, 20)):
         arguments['<outfile>'] = arguments['<infile>']+'.svg'
 
     profile = read_profile(infile)
-    r1 = basic_rib(profile, 100, 2.1)
+
+    # Generate a basic model plane rib (sizes given in inches)
+    r1 = Rib(profile, 100, 2.1)
+    to_mm = 25.4
+    rib_pattern = r1.basic_rib((3/16., 5/16.), (1/2., 5/32.), (3/32., 1/4), to_mm)
 
     dwg = svgwrite.Drawing(arguments['<outfile>'], profile='tiny', size=('170mm', '130mm'), viewBox=('0 0 170 130'))
     svg_extras = {'fill': 'none', 'stroke_width': .25}
 
     ###########################################
-    # Original drawing group
+    # Show the profile with spar placement
     ###########################################
     grp = svgwrite.container.Group(transform='translate({},{})'.format(*offset))
     dwg.add(grp)
@@ -221,46 +240,40 @@ def profile_plot(arguments, chord=100, offset=(60, 20)):
         addpath(spar, grp, closed=True, color='#0000FF')
 
     # Add a bounding box
-    bounds_path =  r1.rect2path (r1.profile_min, r1.profile_size)
-    addpath(bounds_path, grp, closed=True, color='#7F7F7F')
+    addpath(r1.bounds_path, grp, closed=True, color='#7F7F7F')
 
     ###########################################
-    # Add another group for clipper experiments
+    # Add another group for the rib pattern
     ###########################################
-    clipper_grp = svgwrite.container.Group(transform='translate({},{})'.format(60, 40))
-    dwg.add(clipper_grp)
+    rib_grp = svgwrite.container.Group(transform='translate({},{})'.format(60, 40))
+    dwg.add(rib_grp)
 
     # Draw the bounding box
-    bounds_path =  r1.rect2path (r1.profile_min, r1.profile_size)
-    addpath(bounds_path, clipper_grp, closed=True, color='#7F7F7F')
+    addpath(r1.bounds_path, rib_grp, closed=True, color='#7F7F7F')
 
     # Make a clipper object
     SCALING_FACTOR = 1000
     pc = pyclipper.Pyclipper()
 
-    # Add a list of paths and it will 'join' them
-    #full_path = [r1.upper, r1.lower]
-    #pc.AddPaths(pyclipper.scale_to_clipper(full_path, SCALING_FACTOR), pyclipper.PT_SUBJECT, True)
+    # Add the profile to the clipper
+    #pc.AddPath(pyclipper.scale_to_clipper(r1.profile, SCALING_FACTOR), pyclipper.PT_SUBJECT, True)
 
-    # or just use the profile
-    pc.AddPath(pyclipper.scale_to_clipper(r1.profile, SCALING_FACTOR), pyclipper.PT_SUBJECT, True)
+    # The second operand is a list of spars
+    #pc.AddPaths(pyclipper.scale_to_clipper(r1.spars, SCALING_FACTOR), pyclipper.PT_CLIP, True)
 
-    # Punch out spars
-    pc.AddPaths(pyclipper.scale_to_clipper(r1.spars, SCALING_FACTOR), pyclipper.PT_CLIP, True)
+    # Subtract the spar cutouts from the profile 
+    #solution = pc.Execute(pyclipper.CT_DIFFERENCE, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
 
-    # Find the intersection of the profile and its bounding box (should still be the profile)
-    solution = pc.Execute(pyclipper.CT_DIFFERENCE, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
+    # Add the resulting path to the SVG group
+    #for s in pyclipper.scale_from_clipper(solution, SCALING_FACTOR):
+    #    addpath(s, rib_grp, closed=True, color='#FF0000')
 
-    # Add the clipped path to the clipper group
-    for s in pyclipper.scale_from_clipper(solution, SCALING_FACTOR):
-        addpath(s, clipper_grp, closed=True, color='#FF0000')
-
-    # Warning, points will be re-ordered
-    #print(pyclipper.scale_from_clipper(solution, SCALING_FACTOR))
+    for r in rib_pattern:
+        addpath(r, rib_grp, closed=True, color='#FF0000')
 
     # Flip the y-axis on both groups and save the drawing file
     to_cartesian(grp)
-    to_cartesian(clipper_grp)
+    to_cartesian(rib_grp)
     dwg.save()
 
 
