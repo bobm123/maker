@@ -92,25 +92,48 @@ class Rib:
         '''
         return copysign(1, p0[0] - p1[0])
 
-    def translate(self, polars, offset):
+    def translate(self, points, offset):
         '''shifts a set of points by the given offset'''
-        polars = [(p[0]+offset[0], p[1]+offset[1]) for p in polars]
-        return polars
+        points = [(p[0]+offset[0], p[1]+offset[1]) for p in points]
+        return points
         
-    def rotate(self, polars, angle):
+    def rotate(self, points, angle):
         '''Rotates a set of points by the given angle'''
         # Convert to radians,  clockwise positive
         angle = -2 * pi * angle / 360.0
         mat = [[cos(angle), -sin(angle)],[sin(angle), cos(angle)]]
-        return [self.mat_mult(mat, p) for p in polars]
+        return [self.mat_mult(mat, p) for p in points]
 
     def mat_mult(self, A, x):
         '''Multiplies a 2x2 matrix and a vector of length 2'''
         return(A[0][0]*x[0]+A[0][1]*x[1], A[1][0]*x[0]+A[1][1]*x[1]) 
 
+    def add_diamond_le(self, surface, size, x_adjust=1.0):
+        '''
+        Adds a diamond shaped LE to the list of spars
+
+        Positional arguments:
+        surface -- the upper or lower surface, but could be another reference
+        size -- size of leading edge (assumed to be square)
+
+        Keyword arguments:
+        x_adjust -- nudge the diamond shape forward so it captures the profile's shape
+                    with a minimum of sanding. Usually a value between 0 and .1
+        '''
+
+        #position = self.interpolate (surface, self.profile_min[0], (-size*x_adjust, 0))
+        position = self.profile_min[0]+size*.707*x_adjust, self.profile_min[1]+size*.707 
+
+        spar_path = self.rect2path((-size/2.0, -size/2.0), (size, size))
+        spar_path = self.rotate(spar_path, 45)
+        spar_path = self.translate(spar_path, position)
+        self.spars.append(spar_path)
+
+
     def add_spar(self, surface, size, percent_chord, align=(0,0), pinned=False):
-        '''Adds a spar to the list. Leading and trailing edges are
-        also spars with appropriate parameters.
+        '''
+        Adds a spar to the list. Leading and trailing edges can also be 
+        defined as spars with appropriate pinnned and align settings.
         
         Positional arguments:
         surface -- the upper or lower surface, but could be another reference
@@ -180,9 +203,12 @@ class Rib:
         sp_size = [to_mm * x for x in sp_size]
 
         #  add_spar( surface, size, percent, aligment, pinned)
-        self.add_spar(self.lower, le_size, 0.00, (0,0), True)  # LE
+        #self.add_spar(self.lower, le_size, 0.00, (0,0), True)  # LE
         self.add_spar(self.upper, sp_size, 0.33, (0,1), False) # Spar
         self.add_spar(self.upper, te_size, 1.00, (1,0), True)  # TE
+
+        # Optionally make LE a diamond
+        self.add_diamond_le(self.upper, le_size[0], .65)
 
         # Add the profile to the clipper
         self.clipper.AddPath(pyclipper.scale_to_clipper(self.profile, self.SCALING_FACTOR), pyclipper.PT_SUBJECT, True)
@@ -227,7 +253,7 @@ def profile_plot(arguments):
     # Generate a basic model plane rib (sizes given in inches)
     r1 = Rib(profile, 100, 2.1)
     to_mm = 25.4
-    rib_pattern = r1.basic_rib((3/16., 5/16.), (1/2., 5/32.), (3/32., 1/4), to_mm)
+    rib_pattern = r1.basic_rib((3/16., 3/16.), (1/2., 5/32.), (3/32., 1/4), to_mm)
 
     ###########################################
     # Show the profile with spar placement
@@ -236,8 +262,8 @@ def profile_plot(arguments):
     # Add a bounding box
     addpath(r1.bounds_path, grp, closed=True, color='#7F7F7F')
 
-    # Add upper and lower surfaces in red
-    addpath(r1.profile, grp, color='#FF0000')
+    # Add arfoil
+    addpath(r1.profile, grp, color='#FF7F00')
 
     # Draw the spars
     for spar in r1.spars:
