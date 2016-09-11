@@ -191,7 +191,7 @@ class Rib:
         return(xpos-offset[0], ypos-offset[1])
 
 
-    def basic_rib(self, le_size, te_size, sp_size, to_mm=1):
+    def basic_rib(self, le_size, te_size, sp_size, to_mm=1, diamond_le=False):
         '''
         defines a classic balsa model plane rib pattern with solid leading
         and tailing edges and one main spar at 33% of the chord.
@@ -202,13 +202,16 @@ class Rib:
         te_size = [to_mm * x for x in te_size]
         sp_size = [to_mm * x for x in sp_size]
 
-        #  add_spar( surface, size, percent, aligment, pinned)
-        #self.add_spar(self.lower, le_size, 0.00, (0,0), True)  # LE
+        # add a main spar and trailing edge with
+        # add_spar( surface, size, percent, aligment, pinned)
         self.add_spar(self.upper, sp_size, 0.33, (0,1), False) # Spar
         self.add_spar(self.upper, te_size, 1.00, (1,0), True)  # TE
 
-        # Optionally make LE a diamond
-        self.add_diamond_le(self.upper, le_size[0], .65)
+        # Optionally make leading edge a diamond
+        if diamond_le:
+            self.add_diamond_le(self.upper, le_size[0], .65)
+        else:
+            self.add_spar(self.lower, le_size, 0.00, (0,0), True)  # LE
 
         # Add the profile to the clipper
         self.clipper.AddPath(pyclipper.scale_to_clipper(self.profile, self.SCALING_FACTOR), pyclipper.PT_SUBJECT, True)
@@ -217,23 +220,41 @@ class Rib:
         self.clipper.AddPaths(pyclipper.scale_to_clipper(self.spars, self.SCALING_FACTOR), pyclipper.PT_CLIP, True)
 
         # Subtract the spar cutouts from the profile 
-        rib_path = self.clipper.Execute(pyclipper.CT_DIFFERENCE, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
+        self.rib_path = self.clipper.Execute(pyclipper.CT_DIFFERENCE, pyclipper.PFT_EVENODD, pyclipper.PFT_EVENODD)
+        self.rib_path = pyclipper.scale_from_clipper(self.rib_path, self.SCALING_FACTOR)
 
-        return(pyclipper.scale_from_clipper(rib_path, self.SCALING_FACTOR))
+        return self.rib_path
 
 
-def addpath(path, grp, closed = False, color='#FF0000'):
-    '''
-    adds a polygon to an svg group 
-    '''
-    svg_extras = {'fill': 'none', 'stroke_width': .25}
+    def draw(self, grp, show_bounds=False, show_profile=False, show_spars=False):
+        # Draw the rib pattern
+        for r in self.rib_path:
+            self.addpath(r, grp, closed=True, color='#FF0000')
 
-    # Initial move, add then add each line segment, optionally close 
-    path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in path])
-    if closed:
-        path_cmd += 'Z'
-    svg_path = svgwrite.path.Path(d=path_cmd, stroke=color, **svg_extras)
-    grp.add(svg_path)
+        if show_bounds:  # Add a bounding box
+            self.addpath(self.bounds_path, grp, closed=True, color='#7F7F7F')
+
+        if show_profile: # Add arfoil
+            self.addpath(self.profile, grp, color='#FF0000')
+
+        if show_spars:   # Add the spars
+            for spar in self.spars:
+                self.addpath(spar, grp, closed=True, color='#0000FF')
+
+
+    def addpath(self, path, grp, closed = False, color='#FF0000'):
+        '''
+        adds a polygon to an svg group
+        '''
+        svg_extras = {'fill': 'none', 'stroke_width': .25}
+
+        # Initial move, add then add each line segment, optionally close
+        path_cmd = 'M'+'L'.join(["{} {}".format(*p) for p in path])
+        if closed:
+            path_cmd += 'Z'
+        svg_path = svgwrite.path.Path(d=path_cmd, stroke=color, **svg_extras)
+        grp.add(svg_path)
+
 
 
 def profile_plot(arguments):
@@ -253,32 +274,13 @@ def profile_plot(arguments):
     # Generate a basic model plane rib (sizes given in inches)
     r1 = Rib(profile, 100, 2.1)
     to_mm = 25.4
-    rib_pattern = r1.basic_rib((3/16., 3/16.), (1/2., 5/32.), (3/32., 1/4), to_mm)
+    rib_pattern = r1.basic_rib((3/16., 5/16.), (1/2., 5/32.), (3/32., 1/4), to_mm)
 
-    ###########################################
     # Show the profile with spar placement
-    ###########################################
+    r1.draw(grp, show_bounds=True, show_profile=True, show_spars=True)
 
-    # Add a bounding box
-    addpath(r1.bounds_path, grp, closed=True, color='#7F7F7F')
-
-    # Add arfoil
-    addpath(r1.profile, grp, color='#FF7F00')
-
-    # Draw the spars
-    for spar in r1.spars:
-        addpath(spar, grp, closed=True, color='#0000FF')
-
-    ###########################################
     # Add another group for the rib pattern
-    ###########################################
-
-    # Draw the bounding box
-    addpath(r1.bounds_path, rib_grp, closed=True, color='#7F7F7F')
-
-    # Draw the rib pattern
-    for r in rib_pattern:
-        addpath(r, rib_grp, closed=True, color='#FF0000')
+    r1.draw(rib_grp, show_bounds=True, show_profile=False, show_spars=False)
 
     # Flip the y-axis on both groups and save the drawing file
     to_cartesian(grp)
