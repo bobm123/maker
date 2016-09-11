@@ -36,10 +36,8 @@ class Rib:
     the airfoil shape (profile) and chord length. Has a method
     for defining spars, including leading and trailing edge 
     peices'''
-    spars = []
 
     SCALING_FACTOR = 1000
-    clipper = pyclipper.Pyclipper()
 
     def __init__(self, profile, chord = 1, angle = 0.0):
     
@@ -56,6 +54,10 @@ class Rib:
 
         # Seperate upper and lower surface curves
         self.split_path()
+
+        self.spars = []
+        self.clipper = pyclipper.Pyclipper()
+
 
     def __str__(self):
         sstr = ''.join([str(s) for s in self.spars])
@@ -121,8 +123,8 @@ class Rib:
                     with a minimum of sanding. Usually a value between 0 and .1
         '''
 
-        #position = self.interpolate (surface, self.profile_min[0], (-size*x_adjust, 0))
-        position = self.profile_min[0]+size*.707*x_adjust, self.profile_min[1]+size*.707 
+        position = self.interpolate (surface, self.profile_min[0], (-size*x_adjust, 0))
+        #position = self.profile_min[0]+size*.707*x_adjust, self.profile_min[1]+size*.707 
 
         spar_path = self.rect2path((-size/2.0, -size/2.0), (size, size))
         spar_path = self.rotate(spar_path, 45)
@@ -209,7 +211,7 @@ class Rib:
 
         # Optionally make leading edge a diamond
         if diamond_le:
-            self.add_diamond_le(self.upper, le_size[0], .65)
+            self.add_diamond_le(self.upper, le_size[0], .3)
         else:
             self.add_spar(self.lower, le_size, 0.00, (0,0), True)  # LE
 
@@ -264,27 +266,41 @@ def profile_plot(arguments):
 
     # Setup an SVG drawing with two groups
     dwg = svgwrite.Drawing(arguments['<outfile>'], profile='tiny', size=('170mm', '130mm'), viewBox=('0 0 170 130'))
+
     grp = svgwrite.container.Group(transform='translate({},{})'.format(60, 20))
     dwg.add(grp)
     rib_grp = svgwrite.container.Group(transform='translate({},{})'.format(60, 40))
     dwg.add(rib_grp)
 
+    comet_section = svgwrite.container.Group(transform='translate({},{})'.format(60, 60))
+    dwg.add(comet_section)
+    comet_rib = svgwrite.container.Group(transform='translate({},{})'.format(60, 80))
+    dwg.add(comet_rib)
+
     profile = read_profile(infile)
 
     # Generate a basic model plane rib (sizes given in inches)
-    r1 = Rib(profile, 100, 2.1)
     to_mm = 25.4
+    r1 = Rib(profile, 100, 2.1)
     rib_pattern = r1.basic_rib((3/16., 5/16.), (1/2., 5/32.), (3/32., 1/4), to_mm)
 
     # Show the profile with spar placement
     r1.draw(grp, show_bounds=True, show_profile=True, show_spars=True)
 
-    # Add another group for the rib pattern
+    # Show the rib pattern in another group
     r1.draw(rib_grp, show_bounds=True, show_profile=False, show_spars=False)
+
+    # Generate smaller comet "dime scale" style model plane rib
+    r2 = Rib(profile, 3*to_mm, 2.1)
+    rib_pattern = r2.basic_rib((1/16., 1/16.), (1/8., 1/16.), (1/16., 1/8.), to_mm, True)
+    r2.draw(comet_section, show_bounds=True, show_profile=True, show_spars=True)
+    r2.draw(comet_rib, show_bounds=True, show_profile=False, show_spars=False)
 
     # Flip the y-axis on both groups and save the drawing file
     to_cartesian(grp)
     to_cartesian(rib_grp)
+    to_cartesian(comet_section)
+    to_cartesian(comet_rib)
     dwg.save()
 
 
