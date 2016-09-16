@@ -8,9 +8,9 @@ y_thickness = 2.4;
 tail_boom = 4;
 wall = 2.4;
 
-translate([0, 24, 0]) aft_diheadral_brace();
-translate([0, 18, 0]) aft_wing_joiner();
-translate([0, 6, 0]) fwd_diheadral_brace();
+translate([0, 16, 0]) aft_diheadral_brace();
+translate([0, 14, 0]) aft_wing_joiner();
+translate([0, 2, 0]) fwd_diheadral_brace();
 translate([0, 0, 0]) fwd_wing_joiner();
 translate([-20, -12, 0]) stab_joiner();
 translate([20, -12, 0]) stab_joiner();
@@ -43,7 +43,7 @@ module connecting_ring(z_length=z_thickness) {
         }
 }
 
-module arm(length, angle, offset=0)
+module arm(length, angle, offset=0, spar_notch=false)
 {
     difference () {
         translate([0,offset,0])
@@ -52,6 +52,12 @@ module arm(length, angle, offset=0)
                     square([length,y_thickness]);
 
         #screw_holes(length/2, angle);
+        if (spar_notch) {
+            #translate([0, offset, z_thickness-1]) 
+                rotate([0,0,10]) 
+                    cube([length, 1, 1]);
+
+        }
     }
 }
 
@@ -63,19 +69,19 @@ rotate([0,0,angle])
 }
 
 module aft_wing_joiner() {
-    #arm(20, 10, -y_thickness);
-    mirror([1,0,0]) arm(20, 10, -y_thickness);
+    arm(16, 10, -y_thickness);
+    mirror([1,0,0]) arm(16, 10, -y_thickness);
     translate([0, 1.2-y_thickness, 0]) connecting_ring();
 }
 
 module aft_diheadral_brace() {
-    arm(20, 10, 0);
-    mirror([1,0,0]) arm(20, 10, 0);
+    arm(16, 10, 0);
+    mirror([1,0,0]) arm(16, 10, 0);
 }
 
 module fwd_wing_joiner() {
-    arm(30, 10, -y_thickness);
-    mirror([1,0,0]) arm(30, 10, -y_thickness);
+    arm(25, 10, -y_thickness);
+    mirror([1,0,0]) arm(25, 10, -y_thickness);
     translate([0, 0, 0]) { // [0,-1,0] for 1 mm fwd incidence?
         translate([0, -y_thickness/2, 0]) connecting_ring();
         translate([0,-1.2, z_thickness/2])
@@ -84,8 +90,8 @@ module fwd_wing_joiner() {
 }
 
 module fwd_diheadral_brace() {
-    arm(30, 10, 0);
-    mirror([1,0,0]) arm(30, 10, 0);
+    arm(25, 10, 0, true);
+    mirror([1,0,0]) arm(25, 10, 0, true);
 }
 
 module diheadral_brace() {
