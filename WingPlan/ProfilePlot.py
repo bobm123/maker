@@ -15,7 +15,15 @@ import pyclipper
 
 def read_profile(infile):
     '''
-    Reads contents a 
+    Reads contents of an airfoil definition file such as the
+    ones found here:
+    http://m-selig.ae.illinois.edu/ads/coord_database.html
+    
+    TODO: Many have an airfoil name, followed by 2 values
+    indicating number of points for upper and lower surface,
+    then a list of upper serface points and finally the lower
+    surface points.
+    
     '''
     #Skips (and prints) airoil name
     print(infile.readline())
