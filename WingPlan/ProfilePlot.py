@@ -39,6 +39,13 @@ def to_cartesian(grp):
     grp.attribs['transform'] = xform
 
     
+def resize(drw, newsize):
+    '''Resize the drawing'''
+    drw.attribs['width'] = "{}mm".format(newsize[0])
+    drw.attribs['height'] = "{}mm".format(newsize[1])
+    drw.attribs['viewBox'] = "0 0 {} {}".format(newsize[0], newsize[1])
+
+
 class Rib:
     '''A class to define a rib for a model airplane plan given
     the airfoil shape (profile) and chord length. Has a method
@@ -250,7 +257,7 @@ def profile_plot(arguments):
         arguments['<outfile>'] = arguments['<infile>']+'.svg'
 
     # Setup an SVG drawing with two groups
-    dwg = svgwrite.Drawing(arguments['<outfile>'], profile='tiny', size=('170mm', '130mm'), viewBox=('0 0 170 130'))
+    dwg = svgwrite.Drawing(arguments['<outfile>'], profile='tiny', size=('100mm', '100mm'), viewBox=('0 0 100 100'))
     grp = svgwrite.container.Group(transform='translate({},{})'.format(60, 20))
     dwg.add(grp)
     rib_grp = svgwrite.container.Group(transform='translate({},{})'.format(60, 40))
@@ -291,6 +298,7 @@ def profile_plot(arguments):
     # Flip the y-axis on both groups and save the drawing file
     to_cartesian(grp)
     to_cartesian(rib_grp)
+    resize(dwg, (200, 100))
     dwg.save()
 
 
