@@ -16,22 +16,20 @@ def SvgViewer(argv):
 
     # Create a Window
     mywindow = QtGui.QWidget()
-    mywindow.resize(425, 200)
+    mywindow.resize(425, 400)
     mywindow.setWindowTitle('SVG Viewer')
 
     # Create a label and display it all together
-    mylabel = QtGui.QLabel(mywindow)
-    mylabel.setGeometry(QtCore.QRect(10, 10, 80, 15))
-    mylabel.setText(svgFilename)
+    fileLabel = QtGui.QLabel(mywindow)
+    fileLabel.setGeometry(QtCore.QRect(10, 10, 80, 15))
+    fileLabel.setText(svgFilename)
 
-    mysvg_widget = QtSvg.QSvgWidget(svgFilename, mywindow)
-    #mysvg_widget.setGeometry(QtCore.QRect(10, 10, 80, 15))
-    print(mysvg_widget.size())
-    print(mysvg_widget.widthMM(), mysvg_widget.heightMM())
-    print(mysvg_widget.rect())
-
-    #TODO: resize window based on SVG size
-    #mywindow.resize( ... )
+    #Create an SVG widget from the file contents
+    svgWidget = QtSvg.QSvgWidget(svgFilename, mywindow)
+   
+    #Resize window based on drawing size
+    svgSize = svgWidget.renderer().defaultSize()
+    mywindow.resize(svgSize)
 
     mywindow.show()
 
