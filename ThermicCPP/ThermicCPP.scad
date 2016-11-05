@@ -1,11 +1,12 @@
-use <No6_Hardware.scad>
+use <No4_Hardware.scad>
 
 mm = 25.4;
 
+tol=.1;
 fwd_incidence = 1;
 z_thickness = 7.5;
 y_thickness = 2.4;
-tail_boom = 4;
+tail_boom = 4+tol;
 wall = 2.4;
 
 translate([0, 16, 0]) aft_diheadral_brace();
@@ -53,9 +54,10 @@ module arm(length, angle, offset=0, spar_notch=false)
 
         #screw_holes(length/2, angle);
         if (spar_notch) {
-            #translate([0, offset, z_thickness-1]) 
-                rotate([0,0,10]) 
-                    cube([length, 1, 1]);
+            #translate([0, offset, z_thickness-1.5])
+                rotate([0,0,10])
+                    #translate([-0.1, 0, 0])
+                    cube([length+.1, 1.5, 1.5]);
 
         }
     }
@@ -65,7 +67,7 @@ module screw_holes(length=12, angle=10) {
 rotate([0,0,angle]) 
     translate([length,y_thickness+.01,z_thickness/2]) 
         rotate([90,0,0]) 
-            machine_screw6(1/4*mm);
+            machine_screw4(1/4*mm);
 }
 
 module aft_wing_joiner() {
@@ -89,7 +91,7 @@ module fwd_wing_joiner() {
     }
 }
 
-module fwd_diheadral_brace() {
+module fwd_diheadral_brace(t=10) {
     arm(25, 10, 0, true);
     mirror([1,0,0]) arm(25, 10, 0, true);
 }
