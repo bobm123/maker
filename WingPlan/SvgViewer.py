@@ -26,13 +26,13 @@ class SvgViewer(QtGui.QGraphicsView):
         self.setDragMode(QtGui.QGraphicsView.ScrollHandDrag)
 
         # TODO: figure out how to not hard code this
-        self.scale(6, 1.31 * 6)
+        self.scale(6, 1. * 6)
 
     def setFilePath(self, image_path=None):
         if image_path:
             print("Loading {}".format(image_path))
             self._svg.load(image_path)
-            #self.setScale()
+            self.setScale()
             self._loaded = True
 
 
@@ -48,9 +48,9 @@ class SvgViewer(QtGui.QGraphicsView):
         print(default_size.width() / default_size.height()) 
         print(box_size.width() / box_size.height()) 
 
-        self.scale(scaleX, 1.31 * scaleY)
+        #self.scale(scaleX, 1.31 * scaleY)
         print(self.transform())
-        self._transform = self.transform()
+        #self._transform = self.transform()
 
     def wheelEvent(self, event):
         if self._loaded:
