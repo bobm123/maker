@@ -25,9 +25,6 @@ class SvgViewer(QtGui.QGraphicsView):
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setDragMode(QtGui.QGraphicsView.ScrollHandDrag)
 
-        # TODO: figure out how to not hard code this
-        self.scale(6, 1. * 6)
-
     def setFilePath(self, image_path=None):
         if image_path:
             print("Loading {}".format(image_path))
@@ -35,22 +32,17 @@ class SvgViewer(QtGui.QGraphicsView):
             self.setScale()
             self._loaded = True
 
-
     def setScale(self):
         # Set initial scale factor
-        default_size =  self._svg.renderer().defaultSize()
-        box_size = self._svg.renderer().viewBox()
-        print(default_size)
-        print(box_size)
-        scaleX = default_size.width() / box_size.width()
-        scaleY = default_size.height() / box_size.height()
+        dwg_size = self._svg.renderer().viewBox()
+        swidth = self.width() / dwg_size.width()
+        sheight = self.height() / dwg_size.height()
+        s = max(swidth, sheight)
+        self._scale = (s, s)
 
-        print(default_size.width() / default_size.height()) 
-        print(box_size.width() / box_size.height()) 
-
-        #self.scale(scaleX, 1.31 * scaleY)
-        print(self.transform())
-        #self._transform = self.transform()
+        self._zoom = 0
+        self.resetTransform()
+        self.scale(*self._scale)
 
     def wheelEvent(self, event):
         if self._loaded:
@@ -60,14 +52,12 @@ class SvgViewer(QtGui.QGraphicsView):
             else:
                 factor = self._zoomOutFactor
                 self._zoom -= 1
-            if self._zoom > 0:
+
+            if self._zoom >= 0:
                 self.scale(factor, factor)
-                print("zoom step {}, factor {}".format(self._zoom, factor))
-            elif self._zoom == 0:
-                #self.fitInView(0,0,800,600)
-                print("reset zoom")
             else:
-                self._zoom = 0
+                self.resetTransform()
+                self.scale(*self._scale)
 
 
 class Window(QtGui.QWidget):
@@ -94,14 +84,14 @@ class Window(QtGui.QWidget):
 
 
 if __name__ == '__main__':
-#TODO: Make this play with Qt qrg system (may have to use argparse)
+#TODO: Make this play with Qt arg system (may have to use argparse)
 #    arguments = docopt(__doc__, version='Svg Viewer 0.0', options_first=True)
 #    SvgViewer(arguments)
 
     import sys
     app = QtGui.QApplication(sys.argv)
     window = Window()
-    window.setGeometry(500, 300, 800, 600)
+    window.setGeometry(500, 300, 822, 651)
     window.show()
     sys.exit(app.exec_())
 
