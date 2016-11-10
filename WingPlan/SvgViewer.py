@@ -19,6 +19,7 @@ class SvgViewer(QtGui.QGraphicsView):
         self._scene = QtGui.QGraphicsScene(self)
         self._scene.addWidget(self._svg)
         self.setScene(self._scene)
+
         self.setTransformationAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -34,15 +35,33 @@ class SvgViewer(QtGui.QGraphicsView):
 
     def setScale(self):
         # Set initial scale factor
-        dwg_size = self._svg.renderer().viewBox()
-        swidth = self.width() / dwg_size.width()
-        sheight = self.height() / dwg_size.height()
-        s = max(swidth, sheight)
-        self._scale = (s, s)
+
+        viewBox = self._svg.renderer().viewBox()
+        defSize = self._svg.renderer().defaultSize()
+        print("Before Transform")
+        print("viewBox size  {} {}".format(viewBox.width(), viewBox.height()))
+        print("defaultSize() {} {}".format(defSize.width(), defSize.height()))
+        print("self.size     {} {}".format(self.width(), self.height()))
+        print("sceneRect {}".format(self.sceneRect()))
+
+        # TODO: This set of scale factors at least seems to preseerve AR, but how
+        # to actually scale initial view so graphics fills the window?
+        swidth = (self.height() / self.width()) * defSize.width() / self.width()
+        sheight = defSize.height() / self.height()
+        self._scale = (swidth, sheight)
+        print(self._scale)
 
         self._zoom = 0
         self.resetTransform()
         self.scale(*self._scale)
+
+        viewBox = self._svg.renderer().viewBox()
+        defSize = self._svg.renderer().defaultSize()
+        print("After Transform")
+        print("viewBox size  {} {}".format(viewBox.width(), viewBox.height()))
+        print("defaultSize() {} {}".format(defSize.width(), defSize.height()))
+        print("self.size     {} {}".format(self.width(), self.height()))
+        print("sceneRect {}".format(self.sceneRect()))
 
     def wheelEvent(self, event):
         if self._loaded:
