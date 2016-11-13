@@ -1,8 +1,3 @@
-"""
-SVG Viewer
-Usage:
-  SvgViewer <svgfile>
-"""
 import sys
 from PySide import QtCore, QtGui, QtOpenGL, QtSvg
 from docopt import docopt
@@ -35,7 +30,6 @@ class SvgViewer(QtGui.QGraphicsView):
 
     def setScale(self):
         # Set initial scale factor
-
         viewBox = self._svg.renderer().viewBox()
         defSize = self._svg.renderer().defaultSize()
         print("Before Transform")
@@ -79,7 +73,6 @@ class SvgViewer(QtGui.QGraphicsView):
                 self.scale(*self._scale)
 
 
-#class Window(QtGui.QWidget):
 class MainWindow(QtGui.QMainWindow):
     MaxRecentFiles = 9
     windowList = []
@@ -91,26 +84,15 @@ class MainWindow(QtGui.QMainWindow):
 
         self.centralwidget = QtGui.QWidget()
         self.viewer = SvgViewer(self)
-        self.edit = QtGui.QLineEdit(self)
-        self.edit.setReadOnly(True)
-        self.button = QtGui.QToolButton(self)
-        self.button.setText('...')
-        self.button.clicked.connect(self.handleOpen)
         layout = QtGui.QGridLayout(self.centralwidget)
         layout.addWidget(self.viewer, 0, 0, 1, 2)
-        layout.addWidget(self.edit, 1, 0, 1, 1)
-        layout.addWidget(self.button, 1, 1, 1, 1)
         self.setCentralWidget(self.centralwidget)
-
         self.createActions()
         self.createMenus()
 
-
     def handleOpen(self, fileName):
-        self.edit.setText(fileName)
         self.viewer.setFilePath(fileName)
         self.setCurrentFile(fileName)
-
 
     def open(self):
         fileName, filtr = QtGui.QFileDialog.getOpenFileName(self)
@@ -149,18 +131,13 @@ class MainWindow(QtGui.QMainWindow):
 
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu("&File")
-        #self.fileMenu.addAction(self.newAct)
         self.fileMenu.addAction(self.openAct)
-        #self.fileMenu.addAction(self.saveAct)
-        #self.fileMenu.addAction(self.saveAsAct)
-
         self.separatorAct = self.fileMenu.addSeparator()
         for i in range(MainWindow.MaxRecentFiles):
             self.fileMenu.addAction(self.recentFileActs[i])
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAct)
         self.updateRecentFileActions()
-
         self.menuBar().addSeparator()
         self.helpMenu = self.menuBar().addMenu("&Help")
         self.helpMenu.addAction(self.aboutAct)
@@ -191,7 +168,6 @@ class MainWindow(QtGui.QMainWindow):
             if isinstance(widget, MainWindow):
                 widget.updateRecentFileActions()
 
-
     def updateRecentFileActions(self):
         settings = QtCore.QSettings('Maker', 'SvgViewer')
         files = settings.value('recentFileList')
@@ -216,10 +192,6 @@ class MainWindow(QtGui.QMainWindow):
 
 
 if __name__ == '__main__':
-#TODO: Make this play with Qt arg system (may have to use argparse)
-#    arguments = docopt(__doc__, version='Svg Viewer 0.0', options_first=True)
-#    SvgViewer(arguments)
-
     import sys
     app = QtGui.QApplication(sys.argv)
     main_window = MainWindow()
