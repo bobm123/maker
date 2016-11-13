@@ -29,33 +29,20 @@ class SvgViewer(QtGui.QGraphicsView):
             self._loaded = True
 
     def setScale(self):
-        # Set initial scale factor
-        viewBox = self._svg.renderer().viewBox()
-        defSize = self._svg.renderer().defaultSize()
-        print("Before Transform")
-        print("viewBox size  {} {}".format(viewBox.width(), viewBox.height()))
-        print("defaultSize() {} {}".format(defSize.width(), defSize.height()))
-        print("self.size     {} {}".format(self.width(), self.height()))
-        print("sceneRect {}".format(self.sceneRect()))
-
-        # TODO: This set of scale factors at least seems to preseerve AR, but how
-        # to actually scale initial view so graphics fills the window?
-        swidth = (self.height() / self.width()) * defSize.width() / self.width()
-        sheight = defSize.height() / self.height()
-        self._scale = (swidth, sheight)
-        print(self._scale)
-
+        # Initialize scale factor index
         self._zoom = 0
+
+        # Set the svg widget to the renderer's default size
+        defSize = self._svg.renderer().defaultSize()
+        self._svg.resize(defSize)
+
+        # Scale it so the drawing fills the screen's x or y dimension
+        # TODO: Ensure it is centered
+        scale = min((self.width()-18) / defSize.width(), (self.height()-18) / defSize.height())
+        self._scale = (scale, scale)
+
         self.resetTransform()
         self.scale(*self._scale)
-
-        viewBox = self._svg.renderer().viewBox()
-        defSize = self._svg.renderer().defaultSize()
-        print("After Transform")
-        print("viewBox size  {} {}".format(viewBox.width(), viewBox.height()))
-        print("defaultSize() {} {}".format(defSize.width(), defSize.height()))
-        print("self.size     {} {}".format(self.width(), self.height()))
-        print("sceneRect {}".format(self.sceneRect()))
 
     def wheelEvent(self, event):
         if self._loaded:
@@ -195,7 +182,7 @@ if __name__ == '__main__':
     import sys
     app = QtGui.QApplication(sys.argv)
     main_window = MainWindow()
-    main_window.setGeometry(500, 300, 822, 651)
+    main_window.setGeometry(500, 300, 818, 618)
     main_window.show()
     sys.exit(app.exec_())
 
