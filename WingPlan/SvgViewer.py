@@ -10,10 +10,6 @@ class SvgViewer(QtGui.QGraphicsView):
         super(SvgViewer, self).__init__(parent)
         self._loaded = False
         self._zoom = 0
-        self._svg = QtSvg.QSvgWidget()
-        self._scene = QtGui.QGraphicsScene(self)
-        self._scene.addWidget(self._svg)
-        self.setScene(self._scene)
 
         self.setTransformationAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QtGui.QGraphicsView.AnchorUnderMouse)
@@ -22,11 +18,16 @@ class SvgViewer(QtGui.QGraphicsView):
         self.setDragMode(QtGui.QGraphicsView.ScrollHandDrag)
 
     def setFilePath(self, image_path=None):
-        if image_path:
-            print("Loading {}".format(image_path))
-            self._svg.load(image_path)
-            self.setScale()
-            self._loaded = True
+        if not image_path:
+            return
+
+        print("Loading {}".format(image_path))
+        self._svg = QtSvg.QSvgWidget(image_path)
+        self._scene = QtGui.QGraphicsScene(self)
+        self._scene.addWidget(self._svg)
+        self.setScene(self._scene)
+        self.setScale()
+        self._loaded = True
 
     def setScale(self):
         # Initialize scale factor index
@@ -37,7 +38,6 @@ class SvgViewer(QtGui.QGraphicsView):
         self._svg.resize(defSize)
 
         # Scale it so the drawing fills the screen's x or y dimension
-        # TODO: Ensure it is centered
         scale = min((self.width()-18) / defSize.width(), (self.height()-18) / defSize.height())
         self._scale = (scale, scale)
 
@@ -53,9 +53,10 @@ class SvgViewer(QtGui.QGraphicsView):
                 factor = self._zoomOutFactor
                 self._zoom -= 1
 
-            if self._zoom >= 0:
+            if self._zoom > 0:
                 self.scale(factor, factor)
             else:
+                self._zoom = 0
                 self.resetTransform()
                 self.scale(*self._scale)
 
@@ -114,7 +115,6 @@ class MainWindow(QtGui.QMainWindow):
         self.exitAct = QtGui.QAction("E&xit", self, shortcut="Ctrl+Q",
                 statusTip="Exit the application",
                 triggered=QtGui.qApp.closeAllWindows)
-
 
     def createMenus(self):
         self.fileMenu = self.menuBar().addMenu("&File")
