@@ -1,4 +1,4 @@
-import sys
+import sys, os
 from PySide import QtCore, QtGui, QtOpenGL, QtSvg
 from docopt import docopt
 
@@ -6,6 +6,7 @@ from docopt import docopt
 class SvgViewer(QtGui.QGraphicsView):
     _zoomInFactor = 1.1
     _zoomOutFactor = 1/1.1
+
     def __init__(self, parent):
         super(SvgViewer, self).__init__(parent)
         self._loaded = False
@@ -21,7 +22,7 @@ class SvgViewer(QtGui.QGraphicsView):
         if not image_path:
             return
 
-        print("Loading {}".format(image_path))
+        print("Loading {} ".format(os.path.split(image_path)[-1]))
         self._svg = QtSvg.QSvgWidget(image_path)
         self._scene = QtGui.QGraphicsScene(self)
         self._scene.addWidget(self._svg)
@@ -62,8 +63,9 @@ class SvgViewer(QtGui.QGraphicsView):
 
 
 class MainWindow(QtGui.QMainWindow):
-    MaxRecentFiles = 9
+    MaxRecentFiles = 6
     windowList = []
+    _lastPath = ''
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -83,7 +85,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setCurrentFile(fileName)
 
     def open(self):
-        fileName, filtr = QtGui.QFileDialog.getOpenFileName(self)
+        fileName, filtr = QtGui.QFileDialog.getOpenFileName(self, dir=self._lastPath)
         if fileName:
             self.handleOpen(fileName)
 
