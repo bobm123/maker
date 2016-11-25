@@ -1,6 +1,10 @@
 import sys, os
 from PySide import QtCore, QtGui, QtOpenGL, QtSvg
 from docopt import docopt
+import logging
+
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class SvgViewer(QtGui.QGraphicsView):
@@ -22,7 +26,7 @@ class SvgViewer(QtGui.QGraphicsView):
         if not image_path:
             return
 
-        print("Loading {} ".format(os.path.split(image_path)[-1]))
+        logging.debug('Loading {} '.format(os.path.split(image_path)[-1]))
         self._svg = QtSvg.QSvgWidget(image_path)
         self._scene = QtGui.QGraphicsScene(self)
         self._scene.addWidget(self._svg)
