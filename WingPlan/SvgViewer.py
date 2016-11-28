@@ -83,9 +83,10 @@ class MainWindow(QtGui.QMainWindow):
     def handleOpen(self, fileName):
         self.viewer.setFilePath(fileName)
         self.setCurrentFile(fileName)
+        self._lastPath = os.path.split(fileName)[0]
 
     def open(self):
-        fileName, filtr = QtGui.QFileDialog.getOpenFileName(self, dir=self._lastPath)
+        fileName, filtr = QtGui.QFileDialog.getOpenFileName(self, " Open SVG File ", self._lastPath)
         if fileName:
             self.handleOpen(fileName)
 
