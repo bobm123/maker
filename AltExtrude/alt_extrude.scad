@@ -1,3 +1,5 @@
+//# Copyright (C) 2017 Robert Marchese
+//
 // An alternative to the standard linear extrusion operation.
 //
 // A list of 2D coordinates is transformed by the given parametes 
@@ -13,7 +15,7 @@
 //
 
 // Examples
-// Test points are a set is a house shape cenetered on [0,0]
+// Test points form a little house shape centered on [0,0]
 points = [[-5,-5],[5,-5],[5,5],[0,7],[-5,5]];
 
 // height 10, no other transforms
@@ -45,7 +47,8 @@ function dot(a, b) = a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 //  h - The height of the polyhedron
 //  ang-Rotation of the top surface around [0,0]
 //  s - A vector length 2 defining the scale factors for x and Y
-//  t - A vector defining the translation distance
+//  t - A vector defining the translation distance. Note, this
+//      transform is applied after all of the others.
 //
 module alt_extrude(p, h=1, ang=0, s=[1,1], t=[0,0]) {
 
@@ -82,39 +85,3 @@ module alt_extrude(p, h=1, ang=0, s=[1,1], t=[0,0]) {
     // for offset used to expand 2D points into 3D
     translate([0,0,-1]) polyhedron(concat(p0, p1), all_faces);
 }
-
-
-// TODO: Apply scale and rotate operations to points when generating
-// pointsH. Could be done with 2x2 matrix multiplies then expand to 3D.
-// Could H translation be performed at the same time? Possibly if
-// expanded as with multmatrix (with a translate Z).
-
-// Bottom Face
-//points0 = [[0,0,0],[10,0,0],[10,10,0],[5,13,0],[0,10,0]];
-
-// Top Face
-//points6 = [[0,1,6],[10,1,6],[9,9,6],[5,13,6],[1,9,6]];
-
-//N=len(points0);  // len of points and pointsH must be the same
-//bottom = [[for(i=[0:N-1]) i]];
-//top   = [[for(i=[2*N-1:-1:N]) i%(2*N)]];
-//sides = [ for (i=[0:N-1]) [(0+i)%N+N,(1+i)%N+N,(1+i)%N,(0+i)%N]];
-//all_faces = concat(bottom, top, sides);
-
-//echo(all_faces);
-//polyhedron(concat(points0, points6), all_faces);
-
-// hadcoded values taken from example given here:
-//https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Primitive_Solids#polyhedron
-//face0 = [[0,0,0],[10,0,0],[10,10,0],[0,10,0]];
-//face6 = [[0,1,6],[10,1,6],[9,9,6],[1,9,6]];
-/*
-CubeFaces = [
-  [0,1,2,3],  // bottom
-  [7,6,5,4],  // top
-
-  [4,5,1,0],  // front
-  [5,6,2,1],  // right
-  [6,7,3,2],  // back
-  [7,4,0,3]]; // left
-*/
