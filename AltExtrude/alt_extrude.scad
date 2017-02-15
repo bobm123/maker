@@ -55,9 +55,7 @@ module alt_extrude(p, h=1, ang=0, s=[1,1], t=[0,0]) {
     n = len(p);
 
     // Generate the transform matrix for top surface. Could be
-    // 2x2, but the last column could be used to define a skew
-    // Translation. In that case the y-coord for p0 expansion
-    // Must be 1 and h+1 used for p0. F
+    // 2x2, but the last column defines a skew tanslation. 
     M =[[s[0]*cos(ang), -s[1]*sin(ang), t[0]],
         [s[0]*sin(ang),  s[1]*cos(ang), t[1]],
         [            0,              0, 1]];
