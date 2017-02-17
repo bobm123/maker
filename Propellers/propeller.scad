@@ -1,6 +1,9 @@
 // Parameteric design for a helical pitch prop that may
 // be useful for small rubber band powred model planes
 //
+// Dimensions given in mm. Pitch is the ideal distance
+// the propeller moves forward during 1 revolution
+
 // Examples
 //
 // Basic 2-bladed RH-pitch, "sleek streak" clone
@@ -36,18 +39,15 @@ mm = 25.4;
 slices = 100;
 
 // Basic propeller dimensions
-prop_diameter = 5.25; 
+prop_diameter = 5.25 * mm;
+pitch = 5.25 * mm;
 max_chord = .75 * mm;
 shaft_dia = 1/16 * mm;
 hub_dia = 3/16 * mm;
 
-// Factor that controls the propeller's helical pitch
-// Try values between .4 and 2.4 here
-P_D = 1.2;
 
-//ri = (prop_diameter*mm / 2) / slices;
-pdf = P_D / (prop_diameter / 2);
-
+// Blade angle as a function of radius
+function pitch_angle(r) = atan(pitch/(2*PI*r));
 
 // Defines a double taper. Interpolates value for scaling
 // the blade width at the given radius. Hub (r=0.00) has
@@ -63,10 +63,8 @@ function get_blade_width(r) = lookup(r, [
 
 
 module propeller(n=2) {
-    root_adv_angle = atan(pdf/.2); 
-    tip_adv_angle = atan(pdf);
-    echo("Root angle (deg)", root_adv_angle);
-    echo("Tip angle (deg)", , tip_adv_angle);
+    echo("Hub angle (deg)", pitch_angle(hub_dia/2));
+    echo("Tip angle (deg)", pitch_angle(prop_diameter/2));
 
     difference() {
         union() {
@@ -105,9 +103,9 @@ module blade() {
 // their position along the blade radius.
 module p_section(i)
 {
-    ri = (prop_diameter*mm / 2) / slices;
-    alpha = atan(pdf/(i/slices)); 
-    alpha1= atan(pdf/((i+1)/slices));
+    ri = (prop_diameter / 2) / slices;
+    alpha = pitch_angle(ri*i);
+    alpha1= pitch_angle(ri*(i+1));
 
     si = get_blade_width((i)/slices);
     si_1 = get_blade_width((i+1)/slices);
