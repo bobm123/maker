@@ -24,9 +24,9 @@ use <alt_extrude.scad>
 // better luck with the flat plate or T.L.A.R.
 //use <profiles/clarky.scad>;      // Classic wing design
 //use <profiles/clarky-mod.scad>;  // non-zero TE thickness
-//use <profiles/flatplate.scad>;   // Rounded flat plate
+use <profiles/flatplate.scad>;   // Rounded flat plate
 //use <profiles/curvedplate.scad>; // Curved plate
-use <profiles/undercambered.scad>; // Concave section
+//use <profiles/undercambered.scad>; // Concave section
 //use <profiles/tlar.scad>;        // "That looks about right"
 
 // Defines a ratchet freewheeler
@@ -45,7 +45,7 @@ hole_tolerance = .1;
 // Basic propeller dimensions
 prop_diameter = 5.25 * mm;
 pitch = 7.25 * mm;
-max_chord = .75 * mm;
+max_chord = .65 * mm;
 shaft_diameter = 1/16 * mm + hole_tolerance;
 hub_diameter = 3/16 * mm;
 
@@ -58,13 +58,18 @@ function pitch_angle(r) = atan(pitch/(2*PI*r));
 // a width or 45% of max_chord, 100% chord is at 1/3 of the
 // blade length (r=0.33), and the tip chord (r=1.00) is
 // 85% 0f max_chord.
-function get_blade_width(r) = lookup(r, [
-    [ 0.00, 0.45 ],
+function blade_width(r) = lookup(r, [
+    [ 0, 0.39 ],
     [ 0.33, 1.00 ],
     [ 0.99, 0.9 ],
     [ 1.00, 0.85 ]
 ]);
 
+// Defines the amount the blade profile is shifted before rotation
+// on its pitch ange. A value of .5 produces straight leading edge,
+// -.5 a straight trailing edge and a value of 0 (or in between)
+// gives a double taper according to the blade_width() function.
+function offset(r) = 0;
 
 module propeller(n=2) {
     echo("Hub angle (deg)", pitch_angle(hub_diameter/2));
@@ -78,15 +83,15 @@ module propeller(n=2) {
             }
 
             // Hub
-            translate([0,0,max_chord*get_blade_width(.1)/2])
+            translate([0,0,max_chord*blade_width(hub_diameter/2)/4])
                 ratchet(1.5, hub_diameter/2, shaft_diameter/2);
             cylinder(d=hub_diameter,
-                     h=max_chord*get_blade_width(.1),
+                     h=max_chord*blade_width(hub_diameter/2)/2,
                      center=true, $fn=48);
         }
         // Shaft
         cylinder(d=shaft_diameter,
-                 h=max_chord*get_blade_width(1)+1,
+                 h=max_chord*blade_width(1)+1,
                  center=true, $fn=48);
     }
 }
@@ -95,9 +100,10 @@ module propeller(n=2) {
 // Since th blade 'grows' along the Z-azis, it must be rotated
 // down to the X-axis.
 module blade() {
-    rotate([-90,0,0])
-        rotate([0,90,0]) for (i=[0:slices-1]) {
-            p_section(i);
+    shift_z = max_chord*blade_width(hub_diameter/2)/2*offset(hub_diameter/2);
+    translate([0,0,shift_z]) rotate([-90,0,0]) rotate([0,90,0])
+    for (i=[0:slices-1]) {
+        p_section(i);
     }
 }
 
@@ -114,12 +120,17 @@ module p_section(i)
     r0 = max(1,shaft_diameter/2);
     alpha = pitch_angle(ri*i);
     alpha1= pitch_angle(ri*(i+1));
-    si = get_blade_width((i)/slices);
-    si_1 = get_blade_width((i+1)/slices);
+
+    rp = i/slices;
+    rp1=(i+1)/slices;
+    si = max_chord*[blade_width(rp),1.25];
+    si1= max_chord*[blade_width(rp1),1.25];
+
+    ti  = [offset(rp),0];
+    ti1 = [offset(rp1),0];
 
     stitch (
         profile_points(),
-        transform_matrix(r0+ri*i,alpha,max_chord*[si,1],[0,0]),
-        transform_matrix(r0+ri*(i+1),alpha1,max_chord*[si_1,1],[0,0]));
+        transform_matrix(r0+ri*i,alpha,si,ti),
+        transform_matrix(r0+ri*(i+1),alpha1,si1,ti1));
 }
-
