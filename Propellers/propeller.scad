@@ -23,9 +23,10 @@ use <alt_extrude.scad>
 // the thin trailing edge could be a problem. You might have
 // better luck with the flat plate or T.L.A.R.
 //use <profiles/clarky.scad>;      // Classic wing design
+//use <profiles/clarky-mod.scad>;  // non-zero TE thickness
 //use <profiles/flatplate.scad>;   // Rounded flat plate
 //use <profiles/curvedplate.scad>; // Curved plate
-use <profiles/undercamber.scad>;   // Concave section
+use <profiles/undercambered.scad>; // Concave section
 //use <profiles/tlar.scad>;        // "That looks about right"
 
 // Defines a ratchet freewheeler
@@ -36,14 +37,17 @@ mm = 25.4;
 
 // Number of radial slices to use when generating
 // use 10 for fast renders and test, higher to print
-slices = 100;
+slices = 25;
+
+// Makes the holes slightly larger
+hole_tolerance = .1;
 
 // Basic propeller dimensions
 prop_diameter = 5.25 * mm;
-pitch = 5.25 * mm;
+pitch = 7.25 * mm;
 max_chord = .75 * mm;
-shaft_dia = 1/16 * mm;
-hub_dia = 3/16 * mm;
+shaft_diameter = 1/16 * mm + hole_tolerance;
+hub_diameter = 3/16 * mm;
 
 
 // Blade angle as a function of radius
@@ -52,8 +56,8 @@ function pitch_angle(r) = atan(pitch/(2*PI*r));
 // Defines a double taper. Interpolates value for scaling
 // the blade width at the given radius. Hub (r=0.00) has
 // a width or 45% of max_chord, 100% chord is at 1/3 of the
-// blade length (r=0.33), and the tip chord (r=1.00) is 
-// 85% 0f max_chord. 
+// blade length (r=0.33), and the tip chord (r=1.00) is
+// 85% 0f max_chord.
 function get_blade_width(r) = lookup(r, [
     [ 0.00, 0.45 ],
     [ 0.33, 1.00 ],
@@ -63,56 +67,59 @@ function get_blade_width(r) = lookup(r, [
 
 
 module propeller(n=2) {
-    echo("Hub angle (deg)", pitch_angle(hub_dia/2));
+    echo("Hub angle (deg)", pitch_angle(hub_diameter/2));
     echo("Tip angle (deg)", pitch_angle(prop_diameter/2));
 
     difference() {
         union() {
-            // Prop blades
+            // Proppeller blades
             for (bi = [0:n-1]) {
                 rotate([0,0,bi*(360/n)]) blade();
             }
 
             // Hub
             translate([0,0,max_chord*get_blade_width(.1)/2])
-                ratchet(1.5, hub_dia/2, shaft_dia/2);
-            cylinder(d=hub_dia, 
-                     h=max_chord*get_blade_width(.1), 
+                ratchet(1.5, hub_diameter/2, shaft_diameter/2);
+            cylinder(d=hub_diameter,
+                     h=max_chord*get_blade_width(.1),
                      center=true, $fn=48);
         }
         // Shaft
-        cylinder(d=shaft_dia, 
-                 h=max_chord*get_blade_width(1)+1, 
+        cylinder(d=shaft_diameter,
+                 h=max_chord*get_blade_width(1)+1,
                  center=true, $fn=48);
     }
 }
 
 // Assembles a series of blade segments into a complete blade
 // Since th blade 'grows' along the Z-azis, it must be rotated
-// down to the x-axis.
+// down to the X-axis.
 module blade() {
-    rotate([-90,0,0]) 
-        rotate([0,90,0]) for (i=[.01:slices]) {
+    rotate([-90,0,0])
+        rotate([0,90,0]) for (i=[0:slices-1]) {
             p_section(i);
     }
 }
 
-// Forms the i-th segment of the propeller blade with a 
-// convex hull between the airfoild shape at i and i+1.
-// The airfoils are scaled and rotate as a function of
-// their position along the blade radius.
+// Forms the i-th segment of the propeller blade as a
+// polyhedron with faces stretched between the propeller
+// cross section at i and i+1. The airfoils are scaled and rotate
+// as a function of their position along the blade radius.
+//
+// TODO: base minimum r0 based on profile, for 1st station
+// renders properly from stich()
 module p_section(i)
 {
-    ri = (prop_diameter / 2) / slices;
+    ri = ((prop_diameter-shaft_diameter) / 2) / slices;
+    r0 = max(1,shaft_diameter/2);
     alpha = pitch_angle(ri*i);
     alpha1= pitch_angle(ri*(i+1));
-
     si = get_blade_width((i)/slices);
     si_1 = get_blade_width((i+1)/slices);
 
     stitch (
         profile_points(),
-        transform_matrix(ri*i,alpha,max_chord*[si,1],[0,0]),
-        transform_matrix(ri*(i+1),alpha1,max_chord*[si_1,1],[0,0]));
+        transform_matrix(r0+ri*i,alpha,max_chord*[si,1],[0,0]),
+        transform_matrix(r0+ri*(i+1),alpha1,max_chord*[si_1,1],[0,0]));
 }
 
