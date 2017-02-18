@@ -12,7 +12,7 @@
    viewBox="0 0 296.99999 210"
    width="297mm"
    id="svg24"
-   sodipodi:docname="clarky.svg"
+   sodipodi:docname="clarky-mod.svg"
    inkscape:version="0.92.0 unknown">
   <metadata
      id="metadata28">
@@ -22,7 +22,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -39,9 +39,9 @@
      inkscape:window-height="480"
      id="namedview26"
      showgrid="false"
-     inkscape:zoom="7.2813332"
-     inkscape:cx="79.966694"
-     inkscape:cy="34.701782"
+     inkscape:zoom="2.57434"
+     inkscape:cx="135.9571"
+     inkscape:cy="2.353671"
      inkscape:current-layer="svg24"
      inkscape:document-units="mm"
      inkscape:measure-start="394.433,46.6947"
@@ -50,7 +50,7 @@
      id="defs2" />
   <path
      style="fill:none;stroke:#ff7f00;stroke-width:0.25"
-     d="m 33.402611,187.35135 c -8.19167,0.0237 -16.62108,0.81372 -24.1700998,4.2044 -1.5874439,0.92997 -3.4216318,1.99391 -4.1408323,3.76359 0.1572863,2.04224 2.6951059,2.30537 4.2818155,2.66823 9.5747896,1.38767 19.2915776,0.98239 28.9376826,1.05678 20.369188,0.002 61.101243,-0.002 61.101243,-0.002 v -1.79448 c 0,0 -44.255794,-10.09602 -66.009809,-9.8964 z"
+     d="m 33.402611,187.35135 c -8.19167,0.0237 -16.62108,0.81372 -24.1700998,4.2044 -1.8054672,0.92997 -4.1847132,2.32095 -4.1408323,3.76359 0.1572863,2.04224 2.6951059,2.30537 4.2818155,2.66823 9.5747896,1.38767 19.2915776,0.98239 28.9376826,1.05678 20.369188,0.002 61.101243,-0.002 61.101243,-0.002 v -1.79448 c 0,0 -44.255794,-10.09602 -66.009809,-9.8964 z"
      id="path6"
      inkscape:connector-curvature="0"
      sodipodi:nodetypes="ccccccccc" />
