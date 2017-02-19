@@ -93,7 +93,7 @@ class Rib:
         '''
 
         #position = self.interpolate (surface, self.profile_min[0], (-size*x_adjust, 0))
-        position = self.profile_min[0]+size*.707*x_adjust, self.profile_min[1]+size*.707 
+        position = (self.profile_min[0]+size*.707*x_adjust, 2+self.profile_min[1]+size*.707)
 
         spar_path = self.rect2path((-size/2.0, -size/2.0), (size, size))
         spar_path = self.rotate(spar_path, 45)
@@ -175,11 +175,11 @@ class Rib:
 
         #  add_spar( surface, size, percent, aligment, pinned)
         #self.add_spar(self.lower, le_size, 0.00, (0,0), True)  # LE
-        self.add_spar(self.upper, sp_size, 0.33, (0,1), False) # Spar
+        self.add_spar(self.upper, sp_size, 0.27, (0,1), False) # Spar
         self.add_spar(self.upper, te_size, 1.00, (1,0), True)  # TE
 
         # Optionally make LE a diamond
-        self.add_diamond_le(self.upper, le_size[0], .65)
+        self.add_diamond_le(self.upper, le_size[0], .5)
 
         # Add the profile to the clipper
         self.clipper.AddPath(pyclipper.scale_to_clipper(self.profile, self.SCALING_FACTOR), pyclipper.PT_SUBJECT, True)
