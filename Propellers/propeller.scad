@@ -7,7 +7,7 @@
 // Examples
 //
 // Basic 2-bladed RH-pitch, "sleek streak" clone
-color("FireBrick") propeller(2);
+color("FireBrick") propeller(3);
 //
 // 4-bladed RH-pitch
 //propeller(4);
@@ -107,7 +107,6 @@ function blade_width(r) = 1/30*lookup(r, [
 function offset(r) = 0;
 
 
-
 module propeller(n=2) {
     echo("Hub angle (deg)", pitch_angle(hub_diameter/2));
     echo("Tip angle (deg)", pitch_angle(prop_diameter/2));
@@ -154,7 +153,7 @@ module blade() {
 module p_section(i)
 {
     ri = ((prop_diameter-shaft_diameter) / 2) / slices;
-    r0 = max(1,shaft_diameter/2);
+    r0 = max(2,shaft_diameter/2);
     alpha = pitch_angle(ri*i);
     alpha1= pitch_angle(ri*(i+1));
 
@@ -166,7 +165,8 @@ module p_section(i)
     ti  = [offset(rp),0];
     ti1 = [offset(rp1),0];
 
-    stitch (
+    // Form a polyhedron by stretching profile between two polygons
+    stretch (
         profile_points(),
         transform_matrix(r0+ri*i,alpha,si,ti),
         transform_matrix(r0+ri*(i+1),alpha1,si1,ti1));
