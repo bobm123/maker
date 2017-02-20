@@ -21,7 +21,8 @@ def gen_stl_files(project, parts_list, scad_path):
         outfile = open("__%s.scad" % part_name, 'w')
         outfile.write("use <%s>\n%s_stl();\n" % (project, part_name))
         outfile.close()
-        cmd = '%s -o %s.stl __%s.scad' % (scad_path, part_name, part_name)
+        cmd = '"%s" -o %s.stl __%s.scad' % (scad_path, part_name, part_name)
+        print(cmd)
         cmdList.append(cmd)
 
     for cmd in cmdList:
