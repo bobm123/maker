@@ -105,7 +105,7 @@ module stretch(p2d, m0, m1) {
 //      transform is applied after all of the others.
 //
 module alt_extrude(p, h=1, ang=0, s=[1,1], t=[0,0]) {
-    translate([0,0,-1]) stretch (
+    stretch (
         p,
         transform_matrix(),
         transform_matrix(h+1, ang, s, t));
