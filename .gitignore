@@ -5,4 +5,5 @@
 *.JPG
 __*.scad
 *~
+*.gcode
 
