@@ -22,7 +22,6 @@ translate([60,40,0]) pin();
 //translate([30,25,0]) roller();
 //translate([20,2,0]) pin();
 
-
 module pin() 
 {
     rad = inner_608+.5;
@@ -31,10 +30,10 @@ module pin()
         union() {
             translate([0,0,rad*cos(30)]) rotate([90,0,90]) 
                 cylinder(r=rad, h=20, $fn=6);
-            translate([7,0,rad-.5]) rotate([90,0,90]) 
+            translate([7,0,rad-.5]) rotate([90,0,90])
                 cylinder(r=rad+1, h=2, $fn=24);
         }
-        #translate([5,-5,-10]) cube([10,10,10]);
+        translate([5,-5,-10]) cube([10,10,10]);
     }
 }
 
@@ -42,8 +41,10 @@ module roller ()
 {
     difference() {
         cylinder(r=outer_608, h=spool_width);
-        cylinder(r=inner_608+.5+tol, h=spool_width+1, $fn=6);
-        
+        translate([0,0,-.01])
+            cylinder(r=inner_608+.5+tol, h=12, $fn=6);
+        translate([0,0,spool_width-12+.01])
+            cylinder(r=inner_608+.5+tol, h=12, $fn=6);
     }
 }
 
@@ -66,6 +67,7 @@ module hub(thickness)
         }    
         translate([0,0,offset]) cylinder(r=outer_608+tol,h=7);
         cylinder(r=inner_608, h=30, center=true);
+        translate([-.5,10,-.05]) cube([1,6,thickness+.1]);
     }
 }
 
