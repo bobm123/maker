@@ -11,19 +11,24 @@ flange_height = 3;
 //cylinder(h=2, r1=20.9/2, r2=20.9/2);
 
 
+
 module MotorMount1811() {
     difference() {
         base();
         holes();
     }
+    DrillPattern1811();
+}
+
+
+module DrillPattern1811()
+{
     for (a=[0:90:360]) {
         rotate([0, 0, a]) 
             translate([15.5/2, 0, -4])
-                cylinder(h=4, r1=1.1, r2=1.1);
+                cylinder(h=5, r1=1.1, r2=1.1);
     }
-
 }
-
 
 module base() {
     translate([0, 0, rounding]) {
