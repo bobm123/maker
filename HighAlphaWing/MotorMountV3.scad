@@ -1,4 +1,4 @@
-use <MotorMount1811.scad>
+use <BaseBrushless1811.scad>
 
 $fn=24;
 mm=25.4;
